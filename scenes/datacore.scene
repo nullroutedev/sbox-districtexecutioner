@@ -1,0 +1,140 @@
+{
+  "Id": "90beacda-210d-4bf3-a7df-9e5c83e1e571",
+  "GameObjects": [
+    {
+      "Id": "bfc59c12-1ed2-4f91-8956-a95a315eac3c",
+      "Name": "Sun",
+      "Rotation": "-0.0000000377291,0.6329893,0.0000000000000005185386,0.774161",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "DirectionalLight",
+          "__enabled": true,
+          "LightColor": "0.91373,0.98039,1,1",
+          "Shadows": true,
+          "SkyColor": "0.05882,0.07451,0.08235,1"
+        }
+      ]
+    },
+    {
+      "Id": "00344a8c-fa5e-45ae-b12a-10bb781a1dc3",
+      "Name": "2D Skybox",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "SkyBox2D",
+          "__enabled": true,
+          "SkyMaterial": "materials/skybox/light_test_sky_sunny02.vmat",
+          "Tint": "1,1,1,1"
+        },
+        {
+          "__version": 0,
+          "__type": "EnvmapProbe",
+          "__enabled": true,
+          "Bounds": {
+            "Mins": "-512,-512,-512",
+            "Maxs": "512,512,512"
+          },
+          "Feathering": 0.02,
+          "Projection": "Sphere",
+          "Texture": "textures/cubemaps/default2.vtex",
+          "TintColor": "1,1,1,1"
+        }
+      ]
+    },
+    {
+      "Id": "3ee1c9f4-07be-4e0b-8b23-67bee2d8ec8a",
+      "Name": "Camera",
+      "Position": "-116.9319,-243.2814,254.4213",
+      "Rotation": "-0.2056158,0.322752,0.4964002,0.7791919",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "CameraComponent",
+          "__enabled": true,
+          "BackgroundColor": "0.33333,0.46275,0.52157,1",
+          "ClearFlags": "All",
+          "FieldOfView": 80,
+          "IsMainCamera": true,
+          "Orthographic": false,
+          "OrthographicHeight": 1204,
+          "Priority": 1,
+          "RenderExcludeTags": "",
+          "RenderTags": "",
+          "TargetEye": "None",
+          "Viewport": "0,0,1,1",
+          "ZFar": 10000,
+          "ZNear": 10
+        }
+      ]
+    },
+    {
+      "Id": "972bc08c-05ba-4ced-9041-f515dee35385",
+      "Name": "Datacore",
+      "Position": "-14.07166,-56.36058,79.83585",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "MapInstance",
+          "__enabled": true,
+          "MapName": "facepunch.datacore",
+          "OnMapLoaded": null,
+          "OnMapUnloaded": null,
+          "UseMapFromLaunch": false
+        }
+      ],
+      "Children": []
+    },
+    {
+      "Id": "57723daf-6b12-4e32-add9-81a777fe1625",
+      "Name": "Network",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "NetworkManager",
+          "__enabled": true,
+          "PlayerPrefab": "prefabs/player.prefab"
+        }
+      ]
+    },
+    {
+      "Id": "1eec5a87-d016-47a9-ae88-7f2994f9f47f",
+      "Name": "UI",
+      "Position": "-839.3,-295.0071,1001.369",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "ScreenPanel",
+          "__enabled": true,
+          "AutoScreenScale": true,
+          "Opacity": 1,
+          "Scale": 1,
+          "ZIndex": 100
+        },
+        {
+          "__version": 0,
+          "__type": "Chat",
+          "__enabled": true
+        }
+      ]
+    }
+  ],
+  "SceneProperties": {
+    "FixedUpdateFrequency": 50,
+    "Lerping": true,
+    "MaxFixedUpdates": 5,
+    "NetworkFrequency": 60,
+    "ThreadedAnimation": true,
+    "TimeScale": 1,
+    "UseFixedUpdate": true
+  },
+  "Title": "minimal",
+  "Description": "",
+  "__references": []
+}
