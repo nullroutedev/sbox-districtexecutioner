@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sandbox;
 using Sandbox.Citizen;
 
@@ -5,14 +6,17 @@ namespace Facepunch.Arena;
 
 public class PlayerController : Component
 {
-	[Property] public Vector3 Gravity { get; set; } = new Vector3( 0, 0, 800 );
+	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
 	public Vector3 WishVelocity { get; private set; }
-
+	
+	[Property] public List<GameObject> StartingWeapons { get; set; }
 	[Property] public GameObject Body { get; set; }
+	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
-
+	[Property] public GameObject WeaponBone { get; set; }
+	
 	[Sync] public Angles EyeAngles { get; set; }
 
 	[Sync] public bool IsRunning { get; set; }
@@ -30,21 +34,36 @@ public class PlayerController : Component
 		EyeAngles = Scene.Camera.Transform.Rotation.Angles().WithRoll( 0f );
 	}
 
+	protected override void OnStart()
+	{
+		
+		base.OnStart();
+	}
+
 	protected override void OnUpdate()
 	{
 		if ( !IsProxy )
 		{
 			var angles = EyeAngles.Normal;
 			angles += Input.AnalogLook * 0.5f;
-
-			if ( angles.pitch > 80f ) angles.pitch = 80f;
-			if ( angles.pitch < -60f ) angles.pitch = -60f;
+			angles.pitch = angles.pitch.Clamp( -60f, 80f );
 			
 			EyeAngles = angles.WithRoll( 0f );
+
+			var idealEyePos = Eye.Transform.Position + Eye.Transform.Rotation.Forward * 1f;
 			
-			var lookDir = EyeAngles.ToRotation();
-			Scene.Camera.Transform.Position = Eye.Transform.Position;
-			Scene.Camera.Transform.Rotation = lookDir;
+			var trace = Scene.Trace.Ray( Head.Transform.Position, idealEyePos )
+				.UsePhysicsWorld()
+				.IgnoreGameObjectHierarchy( GameObject )
+				.WithAnyTags( "solid" )
+				.Run();
+
+			if ( trace.Hit )
+				Scene.Camera.Transform.Position = trace.EndPosition - trace.Direction * 1f;
+			else
+				Scene.Camera.Transform.Position = idealEyePos;
+			
+			Scene.Camera.Transform.Rotation = EyeAngles.ToRotation();
 			
 			IsRunning = Input.Down( "Run" );
 		}
@@ -57,6 +76,7 @@ public class PlayerController : Component
 		AnimationHelper.WithVelocity( cc.Velocity );
 		AnimationHelper.WithWishVelocity( WishVelocity );
 		AnimationHelper.IsGrounded = cc.IsOnGround;
+		AnimationHelper.HoldType = CitizenAnimationHelper.HoldTypes.Pistol;
 		AnimationHelper.FootShuffle = 0f;
 		AnimationHelper.WithLook( EyeAngles.Forward );
 		AnimationHelper.MoveStyle = IsRunning ? CitizenAnimationHelper.MoveStyles.Run : CitizenAnimationHelper.MoveStyles.Walk;

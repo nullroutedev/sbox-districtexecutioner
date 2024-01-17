@@ -47,8 +47,7 @@
     {
       "Id": "3ee1c9f4-07be-4e0b-8b23-67bee2d8ec8a",
       "Name": "Camera",
-      "Position": "-116.9319,-243.2814,254.4213",
-      "Rotation": "-0.2056158,0.322752,0.4964002,0.7791919",
+      "Position": "0,0,1100",
       "Enabled": true,
       "Components": [
         {
@@ -57,7 +56,7 @@
           "__enabled": true,
           "BackgroundColor": "0.33333,0.46275,0.52157,1",
           "ClearFlags": "All",
-          "FieldOfView": 80,
+          "FieldOfView": 100,
           "IsMainCamera": true,
           "Orthographic": false,
           "OrthographicHeight": 1204,
@@ -67,7 +66,7 @@
           "TargetEye": "None",
           "Viewport": "0,0,1,1",
           "ZFar": 10000,
-          "ZNear": 10
+          "ZNear": 0.5
         }
       ]
     },
