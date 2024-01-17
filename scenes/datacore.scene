@@ -56,7 +56,7 @@
           "__enabled": true,
           "BackgroundColor": "0.33333,0.46275,0.52157,1",
           "ClearFlags": "All",
-          "FieldOfView": 100,
+          "FieldOfView": 120,
           "IsMainCamera": true,
           "Orthographic": false,
           "OrthographicHeight": 1204,
