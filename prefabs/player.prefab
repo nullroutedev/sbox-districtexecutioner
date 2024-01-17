@@ -13,7 +13,9 @@
         "Eye": "87e9e7e1-87fb-4928-aa70-48107e3e6f66",
         "Gravity": "0,0,800",
         "Head": "7f6dc1b9-45d1-4501-a88e-aa15068aaf8d",
-        "StartingWeapons": [],
+        "StartingWeapons": [
+          "prefabs/weapon_usp.prefab"
+        ],
         "WeaponBone": "344709ee-4554-4fee-bcfc-1000b6231d36"
       },
       {

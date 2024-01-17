@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox;
 using Sandbox.Citizen;
 
@@ -9,8 +10,8 @@ public class PlayerController : Component
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
 	public Vector3 WishVelocity { get; private set; }
-	
-	[Property] public List<GameObject> StartingWeapons { get; set; }
+
+	[Property] public List<GameObject> StartingWeapons { get; set; } = new();
 	[Property] public GameObject Body { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
@@ -20,6 +21,8 @@ public class PlayerController : Component
 	[Sync] public Angles EyeAngles { get; set; }
 
 	[Sync] public bool IsRunning { get; set; }
+
+	public WeaponComponent ActiveWeapon => Components.GetInDescendants<WeaponComponent>();
 
 	protected override void OnEnabled()
 	{
@@ -36,7 +39,16 @@ public class PlayerController : Component
 
 	protected override void OnStart()
 	{
-		
+		if ( !IsProxy )
+		{
+			var weaponPrefab = StartingWeapons.FirstOrDefault();
+			var weaponGo = weaponPrefab.Clone();
+			weaponGo.SetParent( WeaponBone );
+			weaponGo.Transform.Position = WeaponBone.Transform.Position;
+			weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
+			weaponGo.Network.Spawn();
+		}
+			
 		base.OnStart();
 	}
 

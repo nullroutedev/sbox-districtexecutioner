@@ -1,7 +1,8 @@
 {
   "RootObject": {
-    "Id": "0e905597-aa17-4b06-8daf-a8d54889b17c",
+    "Id": "ae2815d0-74b9-4cc8-9d84-0a189b0f924c",
     "Name": "weapon_usp",
+    "Scale": "1.5,1.5,1.5",
     "Enabled": true,
     "Components": [
       {
