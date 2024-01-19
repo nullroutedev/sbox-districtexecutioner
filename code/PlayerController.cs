@@ -46,22 +46,16 @@ public class PlayerController : Component
 			weaponGo.SetParent( WeaponBone );
 			weaponGo.Transform.Position = WeaponBone.Transform.Position;
 			weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
-			weaponGo.Network.Spawn();
+			weaponGo.NetworkSpawn();
 		}
 			
 		base.OnStart();
 	}
 
-	protected override void OnUpdate()
+	protected override void OnPreRender()
 	{
 		if ( !IsProxy )
 		{
-			var angles = EyeAngles.Normal;
-			angles += Input.AnalogLook * 0.5f;
-			angles.pitch = angles.pitch.Clamp( -60f, 80f );
-			
-			EyeAngles = angles.WithRoll( 0f );
-
 			var idealEyePos = Eye.Transform.Position + Eye.Transform.Rotation.Forward * 1f;
 			
 			var trace = Scene.Trace.Ray( Head.Transform.Position, idealEyePos )
@@ -76,7 +70,20 @@ public class PlayerController : Component
 				Scene.Camera.Transform.Position = idealEyePos;
 			
 			Scene.Camera.Transform.Rotation = EyeAngles.ToRotation();
+		}
+		
+		base.OnPreRender();
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( !IsProxy )
+		{
+			var angles = EyeAngles.Normal;
+			angles += Input.AnalogLook * 0.5f;
+			angles.pitch = angles.pitch.Clamp( -60f, 80f );
 			
+			EyeAngles = angles.WithRoll( 0f );
 			IsRunning = Input.Down( "Run" );
 		}
 

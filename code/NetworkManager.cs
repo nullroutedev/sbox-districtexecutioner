@@ -26,6 +26,6 @@ public class NetworkManager : Component, Component.INetworkListener
 
 		player.Transform.Position = randomSpawnpoint.Transform.Position;
 		player.Transform.Rotation = randomSpawnpoint.Transform.Rotation;
-		player.Network.Spawn( connection );
+		player.GameObject.NetworkSpawn( connection );
 	}
 }
