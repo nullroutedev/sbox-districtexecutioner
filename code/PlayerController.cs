@@ -54,7 +54,7 @@ public class PlayerController : Component
 
 	protected override void OnPreRender()
 	{
-		if ( !IsProxy )
+		if ( !IsProxy && Scene.IsValid() && Eye.IsValid() )
 		{
 			var idealEyePos = Eye.Transform.Position + Eye.Transform.Rotation.Forward * 1f;
 			
