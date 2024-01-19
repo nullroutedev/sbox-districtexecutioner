@@ -68,8 +68,8 @@ public class PlayerController : Component
 				Scene.Camera.Transform.Position = trace.EndPosition - trace.Direction * 1f;
 			else
 				Scene.Camera.Transform.Position = idealEyePos;
-			
-			Scene.Camera.Transform.Rotation = EyeAngles.ToRotation();
+
+			Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
 		}
 		
 		base.OnPreRender();
@@ -143,6 +143,11 @@ public class PlayerController : Component
 		}
 
 		Transform.Rotation = Rotation.FromYaw( EyeAngles.ToRotation().Yaw() );
+
+		if ( Input.Released( "attack1" ) )
+		{
+			ActiveWeapon.OnPrimaryAttack();
+		}
 	}
 
 	private void BuildWishVelocity()
