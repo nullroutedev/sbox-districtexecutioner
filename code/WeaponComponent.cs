@@ -17,6 +17,7 @@ public abstract class WeaponComponent : Component
 	[Property] public SoundEvent DeploySound { get; set; }
 	[Property] public SoundEvent FireSound { get; set; }
 	[Property] public SoundSequenceData ReloadSoundSequence { get; set; }
+	[Property] public ParticleSystem MuzzleFlash { get; set; }
 	
 	[Sync, Property] public bool IsReloading { get; set; }
 	[Sync, Property] public bool IsDeployed { get; set; }
@@ -182,6 +183,19 @@ public abstract class WeaponComponent : Component
 			p.SetControlPoint( 1, endPos );
 			p.SetControlPoint( 2, distance );
 		} );
+
+		if ( MuzzleFlash is not null )
+		{
+			Scene.SceneWorld.OneShotParticle( Task, MuzzleFlash.ResourcePath, p =>
+			{
+				var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
+
+				if ( transform.HasValue )
+				{
+					p.SetControlPoint( 0, transform.Value );
+				}
+			} );
+		}
 
 		if ( FireSound is not null )
 		{

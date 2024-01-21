@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "cc2e539f-6e7e-4da3-9cbf-8db9a44946bd",
+    "Id": "ebaf3ed7-c096-47fd-8b41-064ce0411d5b",
     "Name": "weapon_mp5",
     "Enabled": true,
     "Components": [
@@ -16,6 +16,7 @@
         "HoldType": "Rifle",
         "IsDeployed": false,
         "IsReloading": false,
+        "MuzzleFlash": "particles/pistol_muzzleflash.vpcf",
         "Recoil": "-40,5,0",
         "ReloadSoundSequence": "sounds/guns/mp5/reload/mp5.reload.sndseq",
         "ReloadTime": 2,
@@ -24,7 +25,7 @@
     ],
     "Children": [
       {
-        "Id": "f6558adf-4791-4f4a-92b4-c61987c599ef",
+        "Id": "896b4393-5ac1-444a-b299-6545962f294e",
         "Name": "Offset",
         "Position": "1.646654,0,-4.321783",
         "Scale": "1.5,1.5,1.5",

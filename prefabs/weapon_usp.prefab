@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "a5e56e38-ae5f-4bce-8218-1de9a07f5923",
+    "Id": "5d86a372-3508-4a4d-9bf7-c721759154c8",
     "Name": "weapon_usp",
     "Scale": "1.5,1.5,1.5",
     "Enabled": true,
@@ -30,6 +30,7 @@
         "HoldType": "Pistol",
         "IsDeployed": false,
         "IsReloading": false,
+        "MuzzleFlash": "particles/pistol_muzzleflash.vpcf",
         "Recoil": "-30,0,0",
         "ReloadSoundSequence": "sounds/guns/m1911/reload/m1911.reload.sndseq",
         "ReloadTime": 1.5,
