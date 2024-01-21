@@ -43,10 +43,8 @@ public abstract class WeaponComponent : Component
 			.UsePhysicsWorld()
 			.WithAnyTags( "solid" )
 			.Run();
-
-		// Don't think GetAttachment is working right.
+		
 		var origin = attachment?.Position ?? startPos;
-		origin = Transform.Position + Transform.Rotation.Forward * 30f + Transform.Rotation.Up * 7f;
 
 		SendAttackMessage( origin, endPos, trace.Distance );
 		NextAttackTime = 1f / FireRate;
