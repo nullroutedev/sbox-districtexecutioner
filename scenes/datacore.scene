@@ -11,6 +11,8 @@
           "__version": 0,
           "__type": "DirectionalLight",
           "__enabled": true,
+          "FogMode": "Enabled",
+          "FogStrength": 1,
           "LightColor": "0.91373,0.98039,1,1",
           "Shadows": true,
           "SkyColor": "0.05882,0.07451,0.08235,1"
@@ -120,6 +122,21 @@
           "__version": 0,
           "__type": "Chat",
           "__enabled": true
+        }
+      ]
+    },
+    {
+      "Id": "3931e92a-532a-43ae-a38f-131e8f352a90",
+      "Name": "WeaponManager",
+      "Enabled": true,
+      "Components": [
+        {
+          "__version": 0,
+          "__type": "WeaponManager",
+          "__enabled": true,
+          "Prefabs": [
+            "prefabs/weapon_usp.prefab"
+          ]
         }
       ]
     }

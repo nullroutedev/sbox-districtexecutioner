@@ -7,6 +7,9 @@ namespace Facepunch.Arena;
 
 public abstract class WeaponComponent : Component
 {
+	[Property] public string DisplayName { get; set; }
+	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
+	
 	public virtual void OnPrimaryAttack()
 	{
 		var renderer = Components.Get<SkinnedModelRenderer>();
@@ -23,35 +26,34 @@ public abstract class WeaponComponent : Component
 		var origin = attachment?.Position ?? startPos;
 		origin = Transform.Position + Transform.Rotation.Forward * 30f + Transform.Rotation.Up * 7f;
 
-		DoNetworkedTracerEffect( origin, endPos, trace.Distance );
+		SendTracerEffectMessage( origin, endPos, trace.Distance );
+	}
+
+	public virtual bool DoReload()
+	{
+		return false;
+	}
+
+	protected override void OnStart()
+	{
+		var player = Components.GetInAncestors<PlayerController>();
+
+		if ( player.IsValid() )
+		{
+			player.AnimationHelper?.TriggerDeploy();
+		}
+		
+		base.OnStart();
 	}
 
 	[Broadcast]
-	private void DoNetworkedTracerEffect( Vector3 startPos, Vector3 endPos, float distance )
+	private void SendTracerEffectMessage( Vector3 startPos, Vector3 endPos, float distance )
 	{
-		DoTracerEffect( "particles/tracer/trail_smoke.vpcf", startPos, endPos, distance );
-	}
-
-	private async void DoTracerEffect( string effectPath, Vector3 startPos, Vector3 endPos, float distance )
-	{
-		var particles = new SceneParticles( Scene.SceneWorld, effectPath );
-		particles.SetControlPoint( 0, startPos );
-		particles.SetControlPoint( 1, endPos );
-		particles.SetControlPoint( 2, distance );
-
-		try
+		Scene.SceneWorld.OneShotParticle( Task, "particles/tracer/trail_smoke.vpcf", p =>
 		{
-			while ( !particles.Finished )
-			{
-				await Task.Frame();
-				particles.Simulate( Time.Delta );
-			}
-		}
-		catch ( TaskCanceledException )
-		{
-			// Do nothing.
-		}
-
-		particles.Delete();
+			p.SetControlPoint( 0, startPos );
+			p.SetControlPoint( 1, endPos );
+			p.SetControlPoint( 2, distance );
+		} );
 	}
 }

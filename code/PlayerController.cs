@@ -11,7 +11,6 @@ public class PlayerController : Component
 	
 	public Vector3 WishVelocity { get; private set; }
 
-	[Property] public List<GameObject> StartingWeapons { get; set; } = new();
 	[Property] public GameObject Body { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
@@ -19,11 +18,26 @@ public class PlayerController : Component
 	[Property] public GameObject WeaponBone { get; set; }
 	
 	[Sync] public Angles EyeAngles { get; set; }
-
 	[Sync] public bool IsRunning { get; set; }
 
-	public WeaponComponent ActiveWeapon => Components.GetInDescendants<WeaponComponent>();
+	public WeaponComponent ActiveWeapon => Components.GetInDescendantsOrSelf<WeaponComponent>();
+	public IEnumerable<WeaponComponent> Weapons => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants );
 
+	public void GiveWeapon( WeaponComponent template )
+	{
+		if ( IsProxy )
+		{
+			Log.Error( "Only the owner can give a weapon to the player!" );
+			return;
+		}
+
+		var weaponGo = template.GameObject.Clone();
+		weaponGo.SetParent( WeaponBone );
+		weaponGo.Transform.Position = WeaponBone.Transform.Position;
+		weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
+		weaponGo.NetworkSpawn();
+	}
+	
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
@@ -41,12 +55,12 @@ public class PlayerController : Component
 	{
 		if ( !IsProxy )
 		{
-			var weaponPrefab = StartingWeapons.FirstOrDefault();
-			var weaponGo = weaponPrefab.Clone();
-			weaponGo.SetParent( WeaponBone );
-			weaponGo.Transform.Position = WeaponBone.Transform.Position;
-			weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
-			weaponGo.NetworkSpawn();
+			var weapons = WeaponManager.Instance.Weapons;
+
+			foreach ( var weapon in weapons )
+			{
+				GiveWeapon( weapon );
+			}
 		}
 			
 		base.OnStart();
@@ -92,10 +106,12 @@ public class PlayerController : Component
 
 		if ( AnimationHelper is null ) return;
 
+		var weapon = ActiveWeapon;
+
+		AnimationHelper.HoldType = weapon.IsValid() ? weapon.HoldType : CitizenAnimationHelper.HoldTypes.None;
 		AnimationHelper.WithVelocity( cc.Velocity );
 		AnimationHelper.WithWishVelocity( WishVelocity );
 		AnimationHelper.IsGrounded = cc.IsOnGround;
-		AnimationHelper.HoldType = CitizenAnimationHelper.HoldTypes.Pistol;
 		AnimationHelper.FootShuffle = 0f;
 		AnimationHelper.WithLook( EyeAngles.Forward );
 		AnimationHelper.MoveStyle = IsRunning ? CitizenAnimationHelper.MoveStyles.Run : CitizenAnimationHelper.MoveStyles.Walk;
@@ -112,10 +128,10 @@ public class PlayerController : Component
 
 		if ( cc.IsOnGround && Input.Down( "Jump" ) )
 		{
-			var flGroundFactor = 1.0f;
-			var flMul = 268.3281572999747f * 1.2f;
-			cc.Punch( Vector3.Up * flMul * flGroundFactor );
-			OnJump();
+			var groundFactor = 1.0f;
+			var multiplier = 268.3281572999747f * 1.2f;
+			cc.Punch( Vector3.Up * multiplier * groundFactor );
+			SendJumpMessage();
 		}
 
 		if ( cc.IsOnGround )
@@ -144,9 +160,21 @@ public class PlayerController : Component
 
 		Transform.Rotation = Rotation.FromYaw( EyeAngles.ToRotation().Yaw() );
 
-		if ( Input.Released( "attack1" ) )
+		var weapon = ActiveWeapon;
+		if ( !weapon.IsValid() ) return;
+
+		if ( Input.Released( "Attack1" ) )
 		{
-			ActiveWeapon.OnPrimaryAttack();
+			weapon.OnPrimaryAttack();
+			SendAttackMessage();
+		}
+
+		if ( Input.Released( "Reload" ) )
+		{
+			if ( weapon.DoReload() )
+			{
+				SendReloadMessage();
+			}
 		}
 	}
 
@@ -167,7 +195,21 @@ public class PlayerController : Component
 	}
 	
 	[Broadcast]
-	private void OnJump()
+	private void SendReloadMessage()
+	{
+		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+		renderer?.Set( "b_reload", true );
+	}
+
+	[Broadcast]
+	private void SendAttackMessage()
+	{
+		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+		renderer?.Set( "b_attack", true );
+	}
+	
+	[Broadcast]
+	private void SendJumpMessage()
 	{
 		AnimationHelper?.TriggerJump();
 	}
