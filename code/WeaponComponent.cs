@@ -25,7 +25,7 @@ public abstract class WeaponComponent : Component
 		if ( !NextAttackTime ) return false;
 		
 		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
-		var attachment = renderer.GetAttachment( "muzzle", true );
+		var attachment = renderer.GetAttachment( "muzzle" );
 		var startPos = Scene.Camera.Transform.Position;
 		var direction = Scene.Camera.Transform.Rotation.Forward;
 		direction += Vector3.Random * Spread;
