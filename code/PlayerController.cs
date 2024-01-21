@@ -21,7 +21,7 @@ public class PlayerController : Component
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
 
-	public WeaponComponent ActiveWeapon => Components.GetInDescendantsOrSelf<WeaponComponent>();
+	public WeaponComponent ActiveWeapon => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants ).FirstOrDefault( c => c.IsDeployed );
 	public IEnumerable<WeaponComponent> Weapons => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants );
 
 	public void GiveWeapon( WeaponComponent template )
@@ -32,20 +32,13 @@ public class PlayerController : Component
 			return;
 		}
 
-		var weaponGo = template.GameObject.Clone( new CloneConfig
-		{
-			Transform = global::Transform.Zero,
-			StartEnabled = true
-		} );
+		var weaponGo = template.GameObject.Clone();
 		weaponGo.SetParent( WeaponBone );
 		weaponGo.Transform.Position = WeaponBone.Transform.Position;
 		weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
 
-		var activeWeapon = ActiveWeapon;
-		if ( !activeWeapon.IsValid() )
-		{
-			weaponGo.Enabled = true;
-		}
+		var weapon = weaponGo.Components.GetInDescendantsOrSelf<WeaponComponent>( true );
+		weapon.IsDeployed = !ActiveWeapon.IsValid();
 		
 		weaponGo.NetworkSpawn();
 	}
@@ -75,10 +68,10 @@ public class PlayerController : Component
 
 		foreach ( var weapon in weapons )
 		{
-			weapon.GameObject.Enabled = false;
+			weapon.IsDeployed = false;
 		}
 		
-		nextWeapon.GameObject.Enabled = true;
+		nextWeapon.IsDeployed = true;
 	}
 
 	[Broadcast]
@@ -106,10 +99,10 @@ public class PlayerController : Component
 		
 		foreach ( var weapon in weapons )
 		{
-			weapon.GameObject.Enabled = false;
+			weapon.IsDeployed = false;
 		}
 		
-		previousWeapon.GameObject.Enabled = true;
+		previousWeapon.IsDeployed = true;
 	}
 	
 	protected override void OnEnabled()

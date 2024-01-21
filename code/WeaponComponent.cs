@@ -12,13 +12,16 @@ public abstract class WeaponComponent : Component
 	[Property] public float FireRate { get; set; } = 3f;
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
 	
+	[Sync, Property] public bool IsDeployed { get; set; }
+	
 	private TimeUntil NextAttackTime { get; set; }
+	private bool WasDeployed { get; set; }
 	
 	public virtual bool DoPrimaryAttack()
 	{
 		if ( !NextAttackTime ) return false;
 		
-		var renderer = Components.Get<SkinnedModelRenderer>();
+		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
 		var attachment = renderer.GetAttachment( "muzzle", true );
 		var startPos = Scene.Camera.Transform.Position;
 		var endPos = startPos + Scene.Camera.Transform.Rotation.Forward * 10000f;
@@ -43,7 +46,7 @@ public abstract class WeaponComponent : Component
 		return false;
 	}
 
-	protected override void OnEnabled()
+	protected virtual void OnDeployed()
 	{
 		var player = Components.GetInAncestors<PlayerController>();
 
@@ -53,7 +56,67 @@ public abstract class WeaponComponent : Component
 			NextAttackTime = DeployTime;
 		}
 		
-		base.OnEnabled();
+		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>( true );
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Enabled = true;
+		}
+	}
+
+	protected virtual void OnHolstered()
+	{
+		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>( true );
+
+		if ( renderer.IsValid() )
+		{
+			renderer.Enabled = false;
+		}
+	}
+
+	protected override void OnStart()
+	{
+		if ( IsDeployed && !WasDeployed )
+		{
+			OnDeployed();
+			WasDeployed = true;
+		}
+
+		if ( !IsDeployed )
+		{
+			OnHolstered();
+			WasDeployed = false;
+		}
+		
+		base.OnStart();
+	}
+
+	protected override void OnUpdate()
+	{
+		if ( IsDeployed && !WasDeployed )
+		{
+			WasDeployed = true;
+			OnDeployed();
+		}
+
+		if ( !IsDeployed && WasDeployed )
+		{
+			WasDeployed = false;
+			OnHolstered();
+		}
+
+		base.OnUpdate();
+	}
+
+	protected override void OnDestroy()
+	{
+		if ( IsDeployed )
+		{
+			OnHolstered();
+			WasDeployed = false;
+		}
+		
+		base.OnDestroy();
 	}
 
 	[Broadcast]

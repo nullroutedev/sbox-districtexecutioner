@@ -1,0 +1,49 @@
+{
+  "RootObject": {
+    "Id": "07d6fefd-b325-4bc4-a6b4-652e518c1b03",
+    "Name": "weapon_mp5",
+    "Enabled": true,
+    "Components": [
+      {
+        "__version": 0,
+        "__type": "Pistol",
+        "__enabled": true,
+        "DeployTime": 0.5,
+        "DisplayName": "MP5",
+        "FireRate": 5,
+        "HoldType": "Rifle",
+        "IsDeployed": false
+      }
+    ],
+    "Children": [
+      {
+        "Id": "6d71fd5e-5d0a-41fc-bd2a-5e5e56b00599",
+        "Name": "Offset",
+        "Position": "1.646654,0,-4.321783",
+        "Scale": "1.5,1.5,1.5",
+        "Enabled": true,
+        "Components": [
+          {
+            "__version": 0,
+            "__type": "SkinnedModelRenderer",
+            "__enabled": true,
+            "BodyGroups": 3,
+            "BoneMergeTarget": null,
+            "CreateBoneObjects": false,
+            "MaterialGroup": null,
+            "MaterialOverride": null,
+            "Model": "models/weapons/sbox_smg_mp5/w_mp5.vmdl",
+            "RenderType": "On",
+            "Tint": "1,1,1,1"
+          }
+        ]
+      }
+    ]
+  },
+  "ShowInMenu": false,
+  "MenuPath": null,
+  "MenuIcon": null,
+  "__references": [
+    "facepunch.w_mp5"
+  ]
+}
