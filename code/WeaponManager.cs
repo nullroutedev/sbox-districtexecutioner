@@ -19,13 +19,15 @@ public class WeaponManager : Component
 
 		foreach ( var prefab in Prefabs )
 		{
-			var template = prefab.GetTemplate();
+			var template = prefab.Clone();
 			var component = template.Components.GetInDescendantsOrSelf<WeaponComponent>();
 			
 			if ( component.IsValid() )
 			{
 				Weapons.Add( component );
 			}
+
+			template.Destroy();
 		}
 		
 		base.OnAwake();

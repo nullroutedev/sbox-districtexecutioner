@@ -21,6 +21,7 @@ public abstract class WeaponComponent : Component
 	[Sync, Property] public bool IsReloading { get; set; }
 	[Sync, Property] public bool IsDeployed { get; set; }
 	
+	private SkinnedModelRenderer ModelRenderer { get; set; }
 	private SoundSequence ReloadSound { get; set; }
 	private TimeUntil ReloadFinishTime { get; set; }
 	private TimeUntil NextAttackTime { get; set; }
@@ -73,33 +74,39 @@ public abstract class WeaponComponent : Component
 
 		if ( player.IsValid() )
 		{
-			player.AnimationHelper?.TriggerDeploy();
-			NextAttackTime = DeployTime;
+			foreach ( var animator in player.Animators )
+			{
+				animator.TriggerDeploy();
+			}
 		}
 		
-		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>( true );
-
-		if ( renderer.IsValid() )
+		if ( ModelRenderer.IsValid() )
 		{
-			renderer.Enabled = true;
+			ModelRenderer.Enabled = true;
 		}
 		
 		if ( DeploySound is not null )
 		{
 			Sound.Play( DeploySound, Transform.Position );
 		}
+		
+		NextAttackTime = DeployTime;
 	}
 
 	protected virtual void OnHolstered()
 	{
-		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>( true );
-
-		if ( renderer.IsValid() )
+		if ( ModelRenderer.IsValid() )
 		{
-			renderer.Enabled = false;
+			ModelRenderer.Enabled = false;
 		}
 
 		ReloadSound?.Stop();
+	}
+
+	protected override void OnEnabled()
+	{
+		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+		base.OnEnabled();
 	}
 
 	protected override void OnStart()

@@ -11,8 +11,11 @@ public class PlayerController : Component
 {
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
+	public SkinnedModelRenderer ModelRenderer { get; private set; }
+	public List<CitizenAnimationHelper> Animators { get; private set; } = new();
 	public Vector3 WishVelocity { get; private set; }
 	
+	[Property] private CitizenAnimationHelper ShadowAnimator { get; set; }
 	[Property] public WeaponContainer Weapons { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
@@ -31,6 +34,12 @@ public class PlayerController : Component
 			Recoil += recoil;
 		}
 	}
+
+	public void ResetViewAngles()
+	{
+		var rotation = Rotation.Identity;
+		EyeAngles = rotation.Angles().WithRoll( 0f );
+	}
 	
 	protected override void OnEnabled()
 	{
@@ -39,10 +48,9 @@ public class PlayerController : Component
 		if ( IsProxy )
 			return;
 
-		if ( !Scene.Camera.IsValid() )
-			return;
-		
-		EyeAngles = Scene.Camera.Transform.Rotation.Angles().WithRoll( 0f );
+		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+
+		ResetViewAngles();
 	}
 
 	protected override void OnStart()
@@ -56,31 +64,42 @@ public class PlayerController : Component
 				Weapons.Give( weapon );
 			}
 		}
+
+		Animators.Add( ShadowAnimator );
+		Animators.Add( AnimationHelper );
 			
 		base.OnStart();
 	}
 
 	protected override void OnPreRender()
 	{
-		if ( !IsProxy && Scene.IsValid() && Eye.IsValid() )
+		base.OnPreRender();
+
+		if ( IsProxy || !Scene.IsValid() )
+			return;
+		
+		if ( Eye.IsValid() )
 		{
-			var idealEyePos = Eye.Transform.Position + Eye.Transform.Rotation.Forward * 1f;
+			var idealEyePos = Eye.Transform.Position;
 			
 			var trace = Scene.Trace.Ray( Head.Transform.Position, idealEyePos )
 				.UsePhysicsWorld()
 				.IgnoreGameObjectHierarchy( GameObject )
 				.WithAnyTags( "solid" )
+				.Radius( 2f )
 				.Run();
 
-			if ( trace.Hit )
-				Scene.Camera.Transform.Position = trace.EndPosition - trace.Direction * 1f;
-			else
-				Scene.Camera.Transform.Position = idealEyePos;
+			Scene.Camera.Transform.Position = trace.Hit ? trace.EndPosition : idealEyePos;
 
 			if ( SicknessMode )
 				Scene.Camera.Transform.Rotation = Rotation.LookAt( Eye.Transform.Rotation.Left ) * Rotation.FromPitch( -10f );
 			else
 				Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
+		}
+
+		if ( ModelRenderer.IsValid() )
+		{
+			ModelRenderer.SetBodyGroup( "head", 1 );
 		}
 		
 		base.OnPreRender();
@@ -102,18 +121,19 @@ public class PlayerController : Component
 
 		var cc = GameObject.Components.Get<CharacterController>();
 		if ( cc is null ) return;
-
-		if ( AnimationHelper is null ) return;
-
+		
 		var weapon = Weapons.Deployed;
 
-		AnimationHelper.HoldType = weapon.IsValid() ? weapon.HoldType : CitizenAnimationHelper.HoldTypes.None;
-		AnimationHelper.WithVelocity( cc.Velocity );
-		AnimationHelper.WithWishVelocity( WishVelocity );
-		AnimationHelper.IsGrounded = cc.IsOnGround;
-		AnimationHelper.FootShuffle = 0f;
-		AnimationHelper.WithLook( EyeAngles.Forward );
-		AnimationHelper.MoveStyle = IsRunning ? CitizenAnimationHelper.MoveStyles.Run : CitizenAnimationHelper.MoveStyles.Walk;
+		foreach ( var animator in Animators )
+		{
+			animator.HoldType = weapon.IsValid() ? weapon.HoldType : CitizenAnimationHelper.HoldTypes.None;
+			animator.WithVelocity( cc.Velocity );
+			animator.WithWishVelocity( WishVelocity );
+			animator.IsGrounded = cc.IsOnGround;
+			animator.FootShuffle = 0f;
+			animator.WithLook( EyeAngles.Forward );
+			animator.MoveStyle = IsRunning ? CitizenAnimationHelper.MoveStyles.Run : CitizenAnimationHelper.MoveStyles.Walk;
+		}
 	}
 
 	protected override void OnFixedUpdate()
@@ -203,20 +223,29 @@ public class PlayerController : Component
 	[Broadcast]
 	private void SendReloadMessage()
 	{
-		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
-		renderer?.Set( "b_reload", true );
+		foreach ( var animator in Animators )
+		{
+			var renderer = animator.Components.Get<SkinnedModelRenderer>( FindMode.EnabledInSelfAndDescendants );
+			renderer?.Set( "b_reload", true );
+		}
 	}
 
 	[Broadcast]
 	private void SendAttackMessage()
 	{
-		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
-		renderer?.Set( "b_attack", true );
+		foreach ( var animator in Animators )
+		{
+			var renderer = animator.Components.Get<SkinnedModelRenderer>( FindMode.EnabledInSelfAndDescendants );
+			renderer?.Set( "b_attack", true );
+		}
 	}
 	
 	[Broadcast]
 	private void SendJumpMessage()
 	{
-		AnimationHelper?.TriggerJump();
+		foreach ( var animator in Animators )
+		{
+			animator.TriggerJump();
+		}
 	}
 }
