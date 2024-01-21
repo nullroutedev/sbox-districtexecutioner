@@ -12,16 +12,15 @@ public class PlayerController : Component
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
 	public Vector3 WishVelocity { get; private set; }
+	
+	[Property] public WeaponContainer Weapons { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
-	[Property] public GameObject WeaponBone { get; set; }
 	[Property] public bool SicknessMode { get; set; }
 	
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
-	public WeaponComponent ActiveWeapon => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants ).FirstOrDefault( c => c.IsDeployed );
-	public IEnumerable<WeaponComponent> Weapons => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants );
 
 	private Angles Recoil { get; set; }
 
@@ -31,87 +30,6 @@ public class PlayerController : Component
 		{
 			Recoil += recoil;
 		}
-	}
-	
-	public void GiveWeapon( WeaponComponent template )
-	{
-		if ( IsProxy )
-		{
-			Log.Error( "Only the owner can give a weapon to the player!" );
-			return;
-		}
-
-		var weaponGo = template.GameObject.Clone();
-		weaponGo.SetParent( WeaponBone );
-		weaponGo.Transform.Position = WeaponBone.Transform.Position;
-		weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
-
-		var weapon = weaponGo.Components.GetInDescendantsOrSelf<WeaponComponent>( true );
-		weapon.IsDeployed = !ActiveWeapon.IsValid();
-		
-		weaponGo.NetworkSpawn();
-	}
-
-	[Broadcast]
-	public void SelectNextWeapon()
-	{
-		var weapons = Weapons.ToList();
-		if ( weapons.Count == 0 )
-			return;
-		
-		var currentWeaponIndex = -1;
-		var activeWeapon = ActiveWeapon;
-
-		if ( activeWeapon.IsValid() )
-		{
-			currentWeaponIndex = weapons.IndexOf( ActiveWeapon );
-		}
-
-		var nextWeaponIndex = currentWeaponIndex + 1;
-		if ( nextWeaponIndex >= weapons.Count )
-			nextWeaponIndex = 0;
-		
-		var nextWeapon = weapons[nextWeaponIndex];
-		if ( nextWeapon == activeWeapon )
-			return;
-
-		foreach ( var weapon in weapons )
-		{
-			weapon.IsDeployed = false;
-		}
-		
-		nextWeapon.IsDeployed = true;
-	}
-
-	[Broadcast]
-	public void SelectPreviousWeapon()
-	{
-		var weapons = Weapons.ToList();
-		if ( weapons.Count == 0 )
-			return;
-		
-		var currentWeaponIndex = -1;
-		var activeWeapon = ActiveWeapon;
-
-		if ( activeWeapon.IsValid() )
-		{
-			currentWeaponIndex = weapons.IndexOf( ActiveWeapon );
-		}
-
-		var previousWeaponIndex = currentWeaponIndex - 1;
-		if ( previousWeaponIndex < 0 )
-			previousWeaponIndex = weapons.Count - 1;
-
-		var previousWeapon = weapons[previousWeaponIndex];
-		if ( previousWeapon == activeWeapon )
-			return;
-		
-		foreach ( var weapon in weapons )
-		{
-			weapon.IsDeployed = false;
-		}
-		
-		previousWeapon.IsDeployed = true;
 	}
 	
 	protected override void OnEnabled()
@@ -135,7 +53,7 @@ public class PlayerController : Component
 
 			foreach ( var weapon in weapons )
 			{
-				GiveWeapon( weapon );
+				Weapons.Give( weapon );
 			}
 		}
 			
@@ -187,7 +105,7 @@ public class PlayerController : Component
 
 		if ( AnimationHelper is null ) return;
 
-		var weapon = ActiveWeapon;
+		var weapon = Weapons.Deployed;
 
 		AnimationHelper.HoldType = weapon.IsValid() ? weapon.HoldType : CitizenAnimationHelper.HoldTypes.None;
 		AnimationHelper.WithVelocity( cc.Velocity );
@@ -242,11 +160,11 @@ public class PlayerController : Component
 		Transform.Rotation = Rotation.FromYaw( EyeAngles.ToRotation().Yaw() );
 
 		if ( Input.MouseWheel.y > 0 )
-			SelectNextWeapon();
+			Weapons.Next();
 		else if ( Input.MouseWheel.y < 0 )
-			SelectPreviousWeapon();
+			Weapons.Previous();
 
-		var weapon = ActiveWeapon;
+		var weapon = Weapons.Deployed;
 		if ( !weapon.IsValid() ) return;
 
 		if ( Input.Down( "Attack1" ) )
