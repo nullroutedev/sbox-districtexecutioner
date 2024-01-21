@@ -135,6 +135,7 @@
           "__type": "WeaponManager",
           "__enabled": true,
           "Prefabs": [
+            "prefabs/weapon_usp.prefab",
             "prefabs/weapon_usp.prefab"
           ]
         }

@@ -3,6 +3,8 @@ using Sandbox;
 
 namespace Facepunch.Arena;
 
+[Group( "Arena" )]
+[Title( "Weapon Manager")]
 public class WeaponManager : Component
 {
 	public static WeaponManager Instance { get; private set; }

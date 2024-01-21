@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Sandbox;
-using Sandbox.Citizen;
 
 namespace Facepunch.Arena;
 

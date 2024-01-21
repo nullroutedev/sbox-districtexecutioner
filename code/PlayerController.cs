@@ -5,6 +5,8 @@ using Sandbox.Citizen;
 
 namespace Facepunch.Arena;
 
+[Group( "Arena" )]
+[Title( "Player Controller" )]
 public class PlayerController : Component
 {
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
