@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "b897612c-f5af-45fd-ac43-f7195055b40a",
+    "Id": "bc028186-1b6a-4282-9033-9b77eb3dfcf6",
     "Name": "weapon_usp",
     "Scale": "1.5,1.5,1.5",
     "Enabled": true,
@@ -22,7 +22,9 @@
         "__version": 0,
         "__type": "Pistol",
         "__enabled": true,
+        "DeployTime": 0.5,
         "DisplayName": "Pistol",
+        "FireRate": 3,
         "HoldType": "Pistol"
       }
     ]

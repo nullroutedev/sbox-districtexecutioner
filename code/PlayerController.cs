@@ -10,12 +10,11 @@ public class PlayerController : Component
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
 	public Vector3 WishVelocity { get; private set; }
-
-	[Property] public GameObject Body { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
 	[Property] public GameObject WeaponBone { get; set; }
+	[Property] public bool SicknessMode { get; set; }
 	
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
@@ -31,11 +30,84 @@ public class PlayerController : Component
 			return;
 		}
 
-		var weaponGo = template.GameObject.Clone();
+		var weaponGo = template.GameObject.Clone( new CloneConfig
+		{
+			Transform = global::Transform.Zero,
+			StartEnabled = true
+		} );
 		weaponGo.SetParent( WeaponBone );
 		weaponGo.Transform.Position = WeaponBone.Transform.Position;
 		weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
+
+		var activeWeapon = ActiveWeapon;
+		if ( !activeWeapon.IsValid() )
+		{
+			weaponGo.Enabled = true;
+		}
+		
 		weaponGo.NetworkSpawn();
+	}
+
+	[Broadcast]
+	public void SelectNextWeapon()
+	{
+		var weapons = Weapons.ToList();
+		if ( weapons.Count == 0 )
+			return;
+		
+		var currentWeaponIndex = -1;
+		var activeWeapon = ActiveWeapon;
+
+		if ( activeWeapon.IsValid() )
+		{
+			currentWeaponIndex = weapons.IndexOf( ActiveWeapon );
+		}
+
+		var nextWeaponIndex = currentWeaponIndex + 1;
+		if ( nextWeaponIndex >= weapons.Count )
+			nextWeaponIndex = 0;
+		
+		var nextWeapon = weapons[nextWeaponIndex];
+		if ( nextWeapon == activeWeapon )
+			return;
+
+		foreach ( var weapon in weapons )
+		{
+			weapon.GameObject.Enabled = false;
+		}
+		
+		nextWeapon.GameObject.Enabled = true;
+	}
+
+	[Broadcast]
+	public void SelectPreviousWeapon()
+	{
+		var weapons = Weapons.ToList();
+		if ( weapons.Count == 0 )
+			return;
+		
+		var currentWeaponIndex = -1;
+		var activeWeapon = ActiveWeapon;
+
+		if ( activeWeapon.IsValid() )
+		{
+			currentWeaponIndex = weapons.IndexOf( ActiveWeapon );
+		}
+
+		var previousWeaponIndex = currentWeaponIndex - 1;
+		if ( previousWeaponIndex < 0 )
+			previousWeaponIndex = weapons.Count - 1;
+
+		var previousWeapon = weapons[previousWeaponIndex];
+		if ( previousWeapon == activeWeapon )
+			return;
+		
+		foreach ( var weapon in weapons )
+		{
+			weapon.GameObject.Enabled = false;
+		}
+		
+		previousWeapon.GameObject.Enabled = true;
 	}
 	
 	protected override void OnEnabled()
@@ -83,7 +155,10 @@ public class PlayerController : Component
 			else
 				Scene.Camera.Transform.Position = idealEyePos;
 
-			Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
+			if ( SicknessMode )
+				Scene.Camera.Transform.Rotation = Rotation.LookAt( Eye.Transform.Rotation.Left ) * Rotation.FromPitch( -10f );
+			else
+				Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
 		}
 		
 		base.OnPreRender();
@@ -160,12 +235,17 @@ public class PlayerController : Component
 
 		Transform.Rotation = Rotation.FromYaw( EyeAngles.ToRotation().Yaw() );
 
+		if ( Input.MouseWheel.y > 0 )
+			SelectNextWeapon();
+		else if ( Input.MouseWheel.y < 0 )
+			SelectPreviousWeapon();
+
 		var weapon = ActiveWeapon;
 		if ( !weapon.IsValid() ) return;
 
 		if ( Input.Released( "Attack1" ) )
 		{
-			weapon.OnPrimaryAttack();
+			weapon.DoPrimaryAttack();
 			SendAttackMessage();
 		}
 

@@ -8,10 +8,16 @@ namespace Facepunch.Arena;
 public abstract class WeaponComponent : Component
 {
 	[Property] public string DisplayName { get; set; }
+	[Property] public float DeployTime { get; set; } = 0.5f;
+	[Property] public float FireRate { get; set; } = 3f;
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
 	
-	public virtual void OnPrimaryAttack()
+	private TimeUntil NextAttackTime { get; set; }
+	
+	public virtual bool DoPrimaryAttack()
 	{
+		if ( !NextAttackTime ) return false;
+		
 		var renderer = Components.Get<SkinnedModelRenderer>();
 		var attachment = renderer.GetAttachment( "muzzle", true );
 		var startPos = Scene.Camera.Transform.Position;
@@ -27,6 +33,9 @@ public abstract class WeaponComponent : Component
 		origin = Transform.Position + Transform.Rotation.Forward * 30f + Transform.Rotation.Up * 7f;
 
 		SendTracerEffectMessage( origin, endPos, trace.Distance );
+		NextAttackTime = 1f / FireRate;
+
+		return true;
 	}
 
 	public virtual bool DoReload()
@@ -34,16 +43,17 @@ public abstract class WeaponComponent : Component
 		return false;
 	}
 
-	protected override void OnStart()
+	protected override void OnEnabled()
 	{
 		var player = Components.GetInAncestors<PlayerController>();
 
 		if ( player.IsValid() )
 		{
 			player.AnimationHelper?.TriggerDeploy();
+			NextAttackTime = DeployTime;
 		}
 		
-		base.OnStart();
+		base.OnEnabled();
 	}
 
 	[Broadcast]
