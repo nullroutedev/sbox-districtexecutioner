@@ -16,15 +16,20 @@ public abstract class WeaponComponent : Component
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
 	[Property] public SoundEvent DeploySound { get; set; }
 	[Property] public SoundEvent FireSound { get; set; }
+	[Property] public SoundSequenceData ReloadSoundSequence { get; set; }
 	
+	[Sync, Property] public bool IsReloading { get; set; }
 	[Sync, Property] public bool IsDeployed { get; set; }
 	
+	private SoundSequence ReloadSound { get; set; }
+	private TimeUntil ReloadFinishTime { get; set; }
 	private TimeUntil NextAttackTime { get; set; }
 	private bool WasDeployed { get; set; }
 	
 	public virtual bool DoPrimaryAttack()
 	{
 		if ( !NextAttackTime ) return false;
+		if ( IsReloading ) return false;
 		
 		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
 		var attachment = renderer.GetAttachment( "muzzle" );
@@ -57,7 +62,10 @@ public abstract class WeaponComponent : Component
 
 	public virtual bool DoReload()
 	{
-		NextAttackTime = ReloadTime;
+		ReloadFinishTime = ReloadTime;
+		IsReloading = true;
+		SendReloadMessage();
+		
 		return true;
 	}
 
@@ -92,6 +100,8 @@ public abstract class WeaponComponent : Component
 		{
 			renderer.Enabled = false;
 		}
+
+		ReloadSound?.Stop();
 	}
 
 	protected override void OnStart()
@@ -125,6 +135,13 @@ public abstract class WeaponComponent : Component
 			OnHolstered();
 		}
 
+		if ( !IsProxy && ReloadFinishTime )
+		{
+			IsReloading = false;
+		}
+
+		ReloadSound?.Update( Transform.Position );
+
 		base.OnUpdate();
 	}
 
@@ -137,6 +154,18 @@ public abstract class WeaponComponent : Component
 		}
 		
 		base.OnDestroy();
+	}
+
+	[Broadcast]
+	private void SendReloadMessage()
+	{
+		if ( ReloadSoundSequence is null )
+			return;
+		
+		ReloadSound?.Stop();
+		
+		ReloadSound = new( ReloadSoundSequence );
+		ReloadSound.Start( Transform.Position );
 	}
 
 	[Broadcast]

@@ -15,7 +15,9 @@
         "FireSound": "sounds/guns/mp5/smg1_shoot.sound",
         "HoldType": "Rifle",
         "IsDeployed": false,
+        "IsReloading": false,
         "Recoil": "-40,5,0",
+        "ReloadSoundSequence": "sounds/guns/mp5/reload/mp5.reload.sndseq",
         "ReloadTime": 2,
         "Spread": 0.01
       }

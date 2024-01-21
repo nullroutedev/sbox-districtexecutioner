@@ -29,7 +29,9 @@
         "FireSound": "sounds/guns/m1911/pistol_shoot.sound",
         "HoldType": "Pistol",
         "IsDeployed": false,
+        "IsReloading": false,
         "Recoil": "-30,0,0",
+        "ReloadSoundSequence": "sounds/guns/m1911/reload/m1911.reload.sndseq",
         "ReloadTime": 1.5,
         "Spread": 0.01
       }
