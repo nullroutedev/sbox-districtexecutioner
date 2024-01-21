@@ -24,14 +24,13 @@ public abstract class WeaponComponent : Component
 	[Property] public ParticleSystem MuzzleFlash { get; set; }
 	
 	[Sync, Property] public bool IsReloading { get; set; }
-	[Sync, Property] public bool IsDeployed { get; set; }
+	[Sync, Property, Change( nameof( OnIsDeployedChanged ) )] public bool IsDeployed { get; set; }
 	[Sync] public int AmmoInClip { get; set; }
 	
 	private SkinnedModelRenderer ModelRenderer { get; set; }
 	private SoundSequence ReloadSound { get; set; }
 	private TimeUntil ReloadFinishTime { get; set; }
 	private TimeUntil NextAttackTime { get; set; }
-	private bool WasDeployed { get; set; }
 	
 	public virtual bool DoPrimaryAttack()
 	{
@@ -95,6 +94,14 @@ public abstract class WeaponComponent : Component
 		return true;
 	}
 
+	protected override void OnStart()
+	{
+		if ( !IsDeployed )
+			OnHolstered();
+		
+		base.OnStart();
+	}
+
 	protected virtual void OnDeployed()
 	{
 		var player = Components.GetInAncestors<PlayerController>();
@@ -136,37 +143,8 @@ public abstract class WeaponComponent : Component
 		base.OnEnabled();
 	}
 
-	protected override void OnStart()
-	{
-		if ( IsDeployed && !WasDeployed )
-		{
-			OnDeployed();
-			WasDeployed = true;
-		}
-
-		if ( !IsDeployed )
-		{
-			OnHolstered();
-			WasDeployed = false;
-		}
-		
-		base.OnStart();
-	}
-
 	protected override void OnUpdate()
 	{
-		if ( IsDeployed && !WasDeployed )
-		{
-			WasDeployed = true;
-			OnDeployed();
-		}
-
-		if ( !IsDeployed && WasDeployed )
-		{
-			WasDeployed = false;
-			OnHolstered();
-		}
-
 		if ( !IsProxy && ReloadFinishTime )
 		{
 			IsReloading = false;
@@ -182,10 +160,20 @@ public abstract class WeaponComponent : Component
 		if ( IsDeployed )
 		{
 			OnHolstered();
-			WasDeployed = false;
 		}
 		
 		base.OnDestroy();
+	}
+	
+	private void OnIsDeployedChanged( bool oldValue, bool newValue )
+	{
+		if ( oldValue == newValue )
+			return;
+		
+		if ( newValue )
+			OnDeployed();
+		else
+			OnHolstered();
 	}
 
 	[Broadcast]
