@@ -17,6 +17,7 @@ public class PlayerController : Component
 	
 	[Property] private CitizenAnimationHelper ShadowAnimator { get; set; }
 	[Property] public WeaponContainer Weapons { get; set; }
+	[Property] public AmmoContainer Ammo { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
@@ -75,7 +76,7 @@ public class PlayerController : Component
 	{
 		base.OnPreRender();
 
-		if ( IsProxy || !Scene.IsValid() )
+		if ( IsProxy || !Scene.IsValid() || !Scene.Camera.IsValid() )
 			return;
 		
 		if ( Eye.IsValid() )

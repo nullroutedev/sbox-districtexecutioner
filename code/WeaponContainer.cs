@@ -9,6 +9,7 @@ namespace Facepunch.Arena;
 public sealed class WeaponContainer : Component
 {
 	[Property] public GameObject WeaponBone { get; set; }
+	[Property] public AmmoContainer Ammo { get; set; }
 	
 	public WeaponComponent Deployed => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants ).FirstOrDefault( c => c.IsDeployed );
 	public IEnumerable<WeaponComponent> All => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants );
@@ -24,7 +25,10 @@ public sealed class WeaponContainer : Component
 		weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
 
 		var weapon = weaponGo.Components.GetInDescendantsOrSelf<WeaponComponent>( true );
+		weapon.AmmoInClip = weapon.ClipSize;
 		weapon.IsDeployed = !Deployed.IsValid();
+
+		Ammo.Give( weapon.AmmoType, weapon.DefaultAmmo );
 		
 		weaponGo.NetworkSpawn();
 	}

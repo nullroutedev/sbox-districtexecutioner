@@ -13,14 +13,19 @@ public abstract class WeaponComponent : Component
 	[Property] public float FireRate { get; set; } = 3f;
 	[Property] public float Spread { get; set; } = 0.01f;
 	[Property] public Angles Recoil { get; set; }
+	[Property] public AmmoType AmmoType { get; set; } = AmmoType.Pistol;
+	[Property] public int DefaultAmmo { get; set; } = 60;
+	[Property] public int ClipSize { get; set; } = 30;
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
 	[Property] public SoundEvent DeploySound { get; set; }
 	[Property] public SoundEvent FireSound { get; set; }
+	[Property] public SoundEvent EmptyClipSound { get; set; }
 	[Property] public SoundSequenceData ReloadSoundSequence { get; set; }
 	[Property] public ParticleSystem MuzzleFlash { get; set; }
 	
 	[Sync, Property] public bool IsReloading { get; set; }
 	[Sync, Property] public bool IsDeployed { get; set; }
+	[Sync] public int AmmoInClip { get; set; }
 	
 	private SkinnedModelRenderer ModelRenderer { get; set; }
 	private SoundSequence ReloadSound { get; set; }
@@ -32,6 +37,13 @@ public abstract class WeaponComponent : Component
 	{
 		if ( !NextAttackTime ) return false;
 		if ( IsReloading ) return false;
+
+		if ( AmmoInClip <= 0 )
+		{
+			SendEmptyClipMessage();
+			NextAttackTime = 1f / FireRate;
+			return false;
+		}
 		
 		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
 		var attachment = renderer.GetAttachment( "muzzle" );
@@ -50,6 +62,7 @@ public abstract class WeaponComponent : Component
 
 		SendAttackMessage( origin, endPos, trace.Distance );
 		NextAttackTime = 1f / FireRate;
+		AmmoInClip--;
 
 		var player = Components.GetInAncestors<PlayerController>();
 		if ( player.IsValid() )
@@ -62,10 +75,23 @@ public abstract class WeaponComponent : Component
 
 	public virtual bool DoReload()
 	{
+		var ammoToTake = ClipSize - AmmoInClip;
+		if ( ammoToTake <= 0 )
+			return false;
+		
+		var player = Components.GetInAncestors<PlayerController>();
+		if ( !player.IsValid() )
+			return false;
+
+		if ( !player.Ammo.TryTake( AmmoType, ammoToTake, out var taken ) )
+			return false;
+
 		ReloadFinishTime = ReloadTime;
 		IsReloading = true;
+		AmmoInClip = taken;
+			
 		SendReloadMessage();
-		
+			
 		return true;
 	}
 
@@ -172,6 +198,15 @@ public abstract class WeaponComponent : Component
 		
 		ReloadSound = new( ReloadSoundSequence );
 		ReloadSound.Start( Transform.Position );
+	}
+
+	[Broadcast]
+	private void SendEmptyClipMessage()
+	{
+		if ( EmptyClipSound is not null )
+		{
+			Sound.Play( EmptyClipSound, Transform.Position );
+		}
 	}
 
 	[Broadcast]

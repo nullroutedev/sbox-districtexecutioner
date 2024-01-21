@@ -8,6 +8,7 @@
         "__version": 0,
         "__type": "PlayerController",
         "__enabled": true,
+        "Ammo": "1538dc64-1e5c-4868-b55d-82871dcd2931",
         "AnimationHelper": "1538dc64-1e5c-4868-b55d-82871dcd2931",
         "Eye": "354e0e58-a1df-49c0-aafe-ed2801beab30",
         "Gravity": "0,0,800",
@@ -67,6 +68,7 @@
         "__version": 0,
         "__type": "WeaponContainer",
         "__enabled": true,
+        "Ammo": "1538dc64-1e5c-4868-b55d-82871dcd2931",
         "WeaponBone": "5755c3c7-f85f-4207-9915-d9062d818517"
       },
       {
@@ -74,6 +76,11 @@
         "__type": "PlayerFootsteps",
         "__enabled": true,
         "ModelRenderer": "ca5aa695-0962-4061-9ad5-12b2cc89cd52"
+      },
+      {
+        "__version": 0,
+        "__type": "AmmoContainer",
+        "__enabled": true
       }
     ],
     "Children": [

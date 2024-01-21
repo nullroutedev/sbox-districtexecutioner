@@ -6,8 +6,6 @@ namespace Facepunch.Arena;
 
 public static class Extensions
 {
-	
-	
 	public static async void OneShotParticle( this SceneWorld world, TaskSource ts, string effectPath, Action<SceneParticles> callback = null )
 	{
 		var particles = new SceneParticles( world, effectPath );
