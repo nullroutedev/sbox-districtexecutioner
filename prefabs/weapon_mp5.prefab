@@ -12,7 +12,11 @@
         "DisplayName": "MP5",
         "FireRate": 5,
         "HoldType": "Rifle",
-        "IsDeployed": false
+        "IsDeployed": false,
+        "MaxSpread": "0.1,0.1,0.1",
+        "MinSpread": "-0.1,-0.1,-0.1",
+        "Recoil": "-40,5,0",
+        "ReloadTime": 2
       }
     ],
     "Children": [

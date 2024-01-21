@@ -8,8 +8,11 @@ namespace Facepunch.Arena;
 public abstract class WeaponComponent : Component
 {
 	[Property] public string DisplayName { get; set; }
+	[Property] public float ReloadTime { get; set; } = 2f;
 	[Property] public float DeployTime { get; set; } = 0.5f;
 	[Property] public float FireRate { get; set; } = 3f;
+	[Property] public float Spread { get; set; } = 0.01f;
+	[Property] public Angles Recoil { get; set; }
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
 	
 	[Sync, Property] public bool IsDeployed { get; set; }
@@ -24,7 +27,10 @@ public abstract class WeaponComponent : Component
 		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
 		var attachment = renderer.GetAttachment( "muzzle", true );
 		var startPos = Scene.Camera.Transform.Position;
-		var endPos = startPos + Scene.Camera.Transform.Rotation.Forward * 10000f;
+		var direction = Scene.Camera.Transform.Rotation.Forward;
+		direction += Vector3.Random * Spread;
+		
+		var endPos = startPos + direction * 10000f;
 		var trace = Scene.Trace.Ray( startPos, endPos )
 			.IgnoreGameObjectHierarchy( GameObject.Root )
 			.UsePhysicsWorld()
@@ -38,12 +44,19 @@ public abstract class WeaponComponent : Component
 		SendTracerEffectMessage( origin, endPos, trace.Distance );
 		NextAttackTime = 1f / FireRate;
 
+		var player = Components.GetInAncestors<PlayerController>();
+		if ( player.IsValid() )
+		{
+			player.ApplyRecoil( Recoil );
+		}
+
 		return true;
 	}
 
 	public virtual bool DoReload()
 	{
-		return false;
+		NextAttackTime = ReloadTime;
+		return true;
 	}
 
 	protected virtual void OnDeployed()

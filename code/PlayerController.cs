@@ -20,10 +20,19 @@ public class PlayerController : Component
 	
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
-
 	public WeaponComponent ActiveWeapon => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants ).FirstOrDefault( c => c.IsDeployed );
 	public IEnumerable<WeaponComponent> Weapons => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants );
 
+	private Angles Recoil { get; set; }
+
+	public void ApplyRecoil( Angles recoil )
+	{
+		if ( !IsProxy )
+		{
+			Recoil += recoil;
+		}
+	}
+	
 	public void GiveWeapon( WeaponComponent template )
 	{
 		if ( IsProxy )
@@ -165,10 +174,12 @@ public class PlayerController : Component
 		{
 			var angles = EyeAngles.Normal;
 			angles += Input.AnalogLook * 0.5f;
+			angles += Recoil * Time.Delta;
 			angles.pitch = angles.pitch.Clamp( -60f, 80f );
 			
 			EyeAngles = angles.WithRoll( 0f );
 			IsRunning = Input.Down( "Run" );
+			Recoil = Recoil.LerpTo( Angles.Zero, Time.Delta * 8f );
 		}
 
 		var cc = GameObject.Components.Get<CharacterController>();
@@ -238,10 +249,12 @@ public class PlayerController : Component
 		var weapon = ActiveWeapon;
 		if ( !weapon.IsValid() ) return;
 
-		if ( Input.Released( "Attack1" ) )
+		if ( Input.Down( "Attack1" ) )
 		{
-			weapon.DoPrimaryAttack();
-			SendAttackMessage();
+			if ( weapon.DoPrimaryAttack() )
+			{
+				SendAttackMessage();
+			}
 		}
 
 		if ( Input.Released( "Reload" ) )
