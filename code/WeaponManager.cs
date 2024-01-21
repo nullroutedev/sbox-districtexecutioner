@@ -11,7 +11,7 @@ public class WeaponManager : Component
 
 	public List<WeaponComponent> Weapons { get; set; } = new();
 	
-	[Property] public List<GameObject> Prefabs { get; set; }
+	[Property] public List<PrefabScene> Prefabs { get; set; }
 
 	protected override void OnAwake()
 	{
@@ -19,18 +19,13 @@ public class WeaponManager : Component
 
 		foreach ( var prefab in Prefabs )
 		{
-			// Conna: cheeky sort of hack to get a list of available weapons.
-			// this lets us read info from the weapons such as their DisplayName.
-			
-			var clone = prefab.Clone();
-			var component = clone.Components.GetInDescendantsOrSelf<WeaponComponent>();
+			var template = prefab.GetTemplate();
+			var component = template.Components.GetInDescendantsOrSelf<WeaponComponent>();
 			
 			if ( component.IsValid() )
 			{
 				Weapons.Add( component );
 			}
-
-			clone.Destroy();
 		}
 		
 		base.OnAwake();

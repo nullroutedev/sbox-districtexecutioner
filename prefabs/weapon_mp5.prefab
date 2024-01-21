@@ -1,27 +1,26 @@
 {
   "RootObject": {
-    "Id": "07d6fefd-b325-4bc4-a6b4-652e518c1b03",
+    "Id": "cc2e539f-6e7e-4da3-9cbf-8db9a44946bd",
     "Name": "weapon_mp5",
     "Enabled": true,
     "Components": [
       {
         "__version": 0,
-        "__type": "Pistol",
+        "__type": "SMG",
         "__enabled": true,
         "DeployTime": 0.5,
         "DisplayName": "MP5",
         "FireRate": 5,
         "HoldType": "Rifle",
         "IsDeployed": false,
-        "MaxSpread": "0.1,0.1,0.1",
-        "MinSpread": "-0.1,-0.1,-0.1",
         "Recoil": "-40,5,0",
-        "ReloadTime": 2
+        "ReloadTime": 2,
+        "Spread": 0.01
       }
     ],
     "Children": [
       {
-        "Id": "6d71fd5e-5d0a-41fc-bd2a-5e5e56b00599",
+        "Id": "f6558adf-4791-4f4a-92b4-c61987c599ef",
         "Name": "Offset",
         "Position": "1.646654,0,-4.321783",
         "Scale": "1.5,1.5,1.5",

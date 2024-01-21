@@ -27,4 +27,12 @@ public static class Extensions
 
 		particles.Delete();
 	}
+
+	public static GameObject GetTemplate( this PrefabScene prefab )
+	{
+		var go = new GameObject();
+		var source = prefab.Source as PrefabFile;
+		go.Deserialize( source.RootObject );
+		return go;
+	}
 }
