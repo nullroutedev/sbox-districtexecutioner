@@ -14,6 +14,8 @@ public abstract class WeaponComponent : Component
 	[Property] public float Spread { get; set; } = 0.01f;
 	[Property] public Angles Recoil { get; set; }
 	[Property] public CitizenAnimationHelper.HoldTypes HoldType { get; set; } = CitizenAnimationHelper.HoldTypes.Pistol;
+	[Property] public SoundEvent DeploySound { get; set; }
+	[Property] public SoundEvent FireSound { get; set; }
 	
 	[Sync, Property] public bool IsDeployed { get; set; }
 	
@@ -41,7 +43,7 @@ public abstract class WeaponComponent : Component
 		var origin = attachment?.Position ?? startPos;
 		origin = Transform.Position + Transform.Rotation.Forward * 30f + Transform.Rotation.Up * 7f;
 
-		SendTracerEffectMessage( origin, endPos, trace.Distance );
+		SendAttackMessage( origin, endPos, trace.Distance );
 		NextAttackTime = 1f / FireRate;
 
 		var player = Components.GetInAncestors<PlayerController>();
@@ -74,6 +76,11 @@ public abstract class WeaponComponent : Component
 		if ( renderer.IsValid() )
 		{
 			renderer.Enabled = true;
+		}
+		
+		if ( DeploySound is not null )
+		{
+			Sound.Play( DeploySound, Transform.Position );
 		}
 	}
 
@@ -133,7 +140,7 @@ public abstract class WeaponComponent : Component
 	}
 
 	[Broadcast]
-	private void SendTracerEffectMessage( Vector3 startPos, Vector3 endPos, float distance )
+	private void SendAttackMessage( Vector3 startPos, Vector3 endPos, float distance )
 	{
 		Scene.SceneWorld.OneShotParticle( Task, "particles/tracer/trail_smoke.vpcf", p =>
 		{
@@ -141,5 +148,10 @@ public abstract class WeaponComponent : Component
 			p.SetControlPoint( 1, endPos );
 			p.SetControlPoint( 2, distance );
 		} );
+
+		if ( FireSound is not null )
+		{
+			Sound.Play( FireSound, startPos );
+		}
 	}
 }

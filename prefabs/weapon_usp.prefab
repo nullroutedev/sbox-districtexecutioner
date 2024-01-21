@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "5e3e1b30-ecf2-4b4c-88b9-761a7748e3eb",
+    "Id": "a5e56e38-ae5f-4bce-8218-1de9a07f5923",
     "Name": "weapon_usp",
     "Scale": "1.5,1.5,1.5",
     "Enabled": true,
@@ -22,15 +22,16 @@
         "__version": 0,
         "__type": "Pistol",
         "__enabled": true,
+        "DeploySound": "sounds/guns/switch/weapon_switch.sound",
         "DeployTime": 0.5,
         "DisplayName": "Pistol",
         "FireRate": 3,
+        "FireSound": "sounds/guns/m1911/pistol_shoot.sound",
         "HoldType": "Pistol",
         "IsDeployed": false,
-        "MaxSpread": "0.1,0.1,0.1",
-        "MinSpread": "-0.1,-0.1,-0.1",
         "Recoil": "-30,0,0",
-        "ReloadTime": 1.5
+        "ReloadTime": 1.5,
+        "Spread": 0.01
       }
     ]
   },
