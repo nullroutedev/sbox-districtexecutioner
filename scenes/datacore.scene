@@ -86,6 +86,12 @@
           "OnMapLoaded": null,
           "OnMapUnloaded": null,
           "UseMapFromLaunch": false
+        },
+        {
+          "__version": 0,
+          "__type": "SpawnPointStripper",
+          "__enabled": true,
+          "Map": "972bc08c-05ba-4ced-9041-f515dee35385"
         }
       ],
       "Children": []
