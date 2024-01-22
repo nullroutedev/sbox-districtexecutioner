@@ -260,15 +260,15 @@ public class PlayerController : Component, IHealthComponent
 		var rotation = EyeAngles.ToRotation();
 
 		WishVelocity = rotation * Input.AnalogMove;
-		WishVelocity = WishVelocity.WithZ( 0 );
+		WishVelocity = WishVelocity.WithZ( 0f );
 
 		if ( !WishVelocity.IsNearZeroLength )
 			WishVelocity = WishVelocity.Normal;
 
 		if ( Input.Down( "Run" ) )
-			WishVelocity *= 320.0f;
+			WishVelocity *= 260f;
 		else
-			WishVelocity *= 110.0f;
+			WishVelocity *= 110f;
 	}
 	
 	[Broadcast]

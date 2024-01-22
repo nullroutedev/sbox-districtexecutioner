@@ -9,6 +9,7 @@ namespace Facepunch.Arena;
 public class NetworkManager : Component, Component.INetworkListener
 {
 	[Property] public PrefabScene PlayerPrefab { get; set; }
+	[Property] public GameObject SpawnpointContainer { get; set; }
 
 	protected override void OnStart()
 	{
@@ -23,7 +24,7 @@ public class NetworkManager : Component, Component.INetworkListener
 	void INetworkListener.OnActive( Connection connection )
 	{
 		var player = PlayerPrefab.Clone().Components.Get<PlayerController>();
-		var spawnpoints = Scene.GetAllComponents<SpawnPoint>();
+		var spawnpoints = SpawnpointContainer.Components.GetAll<SpawnPoint>();
 		var randomSpawnpoint = Game.Random.FromList( spawnpoints.ToList() );
 
 		player.Transform.Position = randomSpawnpoint.Transform.Position;

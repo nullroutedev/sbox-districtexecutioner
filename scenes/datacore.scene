@@ -74,7 +74,7 @@
     },
     {
       "Id": "972bc08c-05ba-4ced-9041-f515dee35385",
-      "Name": "Datacore",
+      "Name": "Map",
       "Position": "-14.07166,-56.36058,79.83585",
       "Enabled": true,
       "Components": [
@@ -82,7 +82,7 @@
           "__version": 0,
           "__type": "MapInstance",
           "__enabled": true,
-          "MapName": "facepunch.datacore",
+          "MapName": "eagleone.killhouse_chimona",
           "OnMapLoaded": null,
           "OnMapUnloaded": null,
           "UseMapFromLaunch": false
@@ -99,7 +99,8 @@
           "__version": 0,
           "__type": "NetworkManager",
           "__enabled": true,
-          "PlayerPrefab": "prefabs/player.prefab"
+          "PlayerPrefab": "prefabs/player.prefab",
+          "SpawnpointContainer": "8f0e607d-3d88-4843-92a7-6af9fbd72840"
         }
       ]
     },
@@ -137,6 +138,167 @@
           "Prefabs": [
             "prefabs/weapon_usp.prefab",
             "prefabs/weapon_mp5.prefab"
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "8f0e607d-3d88-4843-92a7-6af9fbd72840",
+      "Name": "Spawns",
+      "Enabled": true,
+      "Children": [
+        {
+          "Id": "cb694a20-12f9-4d3b-b71f-cfa35e3c8637",
+          "Name": "Spawnpoint",
+          "Position": "-186.1646,689.8775,-0.00003880796",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "5f692c44-cac1-4ef0-8e65-d99e594f87ba",
+          "Name": "Spawnpoint",
+          "Position": "340.8411,-42.46852,0.0000004643298",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "593d0430-16b9-4f1a-a1f5-02f78997529f",
+          "Name": "Spawnpoint",
+          "Position": "-113.6458,-876.4552,-0.0001453845",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "c0a61356-a334-4c09-b301-5d2f4d1e5e2a",
+          "Name": "Spawnpoint",
+          "Position": "-377.7809,-1447.219,-0.0002014254",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "89be7385-20b7-4348-a0b6-77b4383e47d6",
+          "Name": "Spawnpoint",
+          "Position": "-648.9064,-1092.607,-0.0001170701",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "51f28cc5-f51e-42d4-874f-319dc92da8da",
+          "Name": "Spawnpoint",
+          "Position": "302.3709,-1198.172,-0.00006238234",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "b59cd1cc-8628-44a5-b09e-78bd9f744aac",
+          "Name": "Spawnpoint",
+          "Position": "-363.3175,259.691,-0.0001314257",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "31ee32dc-cdc6-474b-86b0-499d7bdc3eca",
+          "Name": "Spawnpoint",
+          "Position": "-192.5561,837.8281,-0.0002572035",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "ab7c872a-34d9-4ed3-abd9-3c35b98268bf",
+          "Name": "Spawnpoint",
+          "Position": "-356.3878,1370.798,-0.000418375",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "4a516a9d-0bd7-49a1-b1bc-fafa8b2ecbd0",
+          "Name": "Spawnpoint",
+          "Position": "596.3435,1156.468,-0.0006310834",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        },
+        {
+          "Id": "e96e8442-a216-41ae-b30c-bc170b1ed82d",
+          "Name": "Spawnpoint",
+          "Position": "150.4754,1367.996,-0.0005484235",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "SpawnPoint",
+              "__enabled": true,
+              "Color": "0.8902,0.31765,0.05098,1"
+            }
           ]
         }
       ]

@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using Sandbox;
-using Sandbox.Diagnostics;
 
 namespace Facepunch.Arena;
 
