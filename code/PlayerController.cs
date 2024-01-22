@@ -12,6 +12,7 @@ public class PlayerController : Component, IHealthComponent
 {
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
+	public CharacterController CharacterController { get; private set; }
 	public SkinnedModelRenderer ModelRenderer { get; private set; }
 	public List<CitizenAnimationHelper> Animators { get; private set; } = new();
 	public Vector3 WishVelocity { get; private set; }
@@ -23,13 +24,20 @@ public class PlayerController : Component, IHealthComponent
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
 	[Property] public bool SicknessMode { get; set; }
+	[Property] public bool EnableCrouching { get; set; }
+	[Property] public float StandHeight { get; set; } = 64f;
+	[Property] public float DuckHeight { get; set; } = 28f;
 
 	[Sync, Property] public float MaxHealth { get; private set; } = 100f;
 	[Sync] public LifeState LifeState { get; private set; } = LifeState.Alive;
 	[Sync] public float Health { get; private set; } = 100f;
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
+	[Sync] public bool IsCrouching { get; set; }
 
+	private RealTimeSince LastGroundedTime { get; set; }
+	private RealTimeSince LastUngroundedTime { get; set; }
+	private bool WantsToCrouch { get; set; }
 	private Angles Recoil { get; set; }
 
 	public void ApplyRecoil( Angles recoil )
@@ -74,6 +82,16 @@ public class PlayerController : Component, IHealthComponent
 		}
 	}
 
+	protected virtual bool CanUncrouch()
+	{
+		if ( !IsCrouching ) return true;
+		if ( LastUngroundedTime < 0.2f ) return false;
+
+		var cc = GameObject.Components.Get<CharacterController>();
+		var tr = cc.TraceDirection( Vector3.Up * DuckHeight );
+		return !tr.Hit;
+	}
+
 	protected virtual void OnKilled( GameObject attacker )
 	{
 		
@@ -84,6 +102,12 @@ public class PlayerController : Component, IHealthComponent
 		base.OnAwake();
 		
 		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+		CharacterController = Components.GetInDescendantsOrSelf<CharacterController>();
+
+		if ( CharacterController.IsValid() )
+		{
+			CharacterController.Height = StandHeight;
+		}
 		
 		if ( IsProxy )
 			return;
@@ -137,14 +161,21 @@ public class PlayerController : Component, IHealthComponent
 		if ( Eye.IsValid() )
 		{
 			var idealEyePos = Eye.Transform.Position;
+			var headPosition = Transform.Position + Vector3.Up * CharacterController.Height;
+			var headTrace = Scene.Trace.Ray( Transform.Position, headPosition )
+				.UsePhysicsWorld()
+				.IgnoreGameObjectHierarchy( GameObject )
+				.Run();
+
+			headPosition = headTrace.EndPosition - headTrace.Direction * 2f;
 			
-			var trace = Scene.Trace.Ray( Head.Transform.Position, idealEyePos )
+			var trace = Scene.Trace.Ray( headPosition, idealEyePos )
 				.UsePhysicsWorld()
 				.IgnoreGameObjectHierarchy( GameObject )
 				.WithAnyTags( "solid" )
 				.Radius( 2f )
 				.Run();
-
+			
 			Scene.Camera.Transform.Position = trace.Hit ? trace.EndPosition : idealEyePos;
 
 			if ( SicknessMode )
@@ -169,22 +200,81 @@ public class PlayerController : Component, IHealthComponent
 			IsRunning = Input.Down( "Run" );
 			Recoil = Recoil.LerpTo( Angles.Zero, Time.Delta * 8f );
 		}
-
-		var cc = GameObject.Components.Get<CharacterController>();
-		if ( cc is null ) return;
 		
 		var weapon = Weapons.Deployed;
 
 		foreach ( var animator in Animators )
 		{
 			animator.HoldType = weapon.IsValid() ? weapon.HoldType : CitizenAnimationHelper.HoldTypes.None;
-			animator.WithVelocity( cc.Velocity );
+			animator.WithVelocity( CharacterController.Velocity );
 			animator.WithWishVelocity( WishVelocity );
-			animator.IsGrounded = cc.IsOnGround;
+			animator.IsGrounded = CharacterController.IsOnGround;
 			animator.FootShuffle = 0f;
+			animator.DuckLevel = IsCrouching ? 1f : 0f;
 			animator.WithLook( EyeAngles.Forward );
-			animator.MoveStyle = IsRunning ? CitizenAnimationHelper.MoveStyles.Run : CitizenAnimationHelper.MoveStyles.Walk;
+			animator.MoveStyle = ( IsRunning && !IsCrouching ) ? CitizenAnimationHelper.MoveStyles.Run : CitizenAnimationHelper.MoveStyles.Walk;
 		}
+	}
+
+	protected virtual void DoCrouchingInput()
+	{
+		WantsToCrouch = EnableCrouching && CharacterController.IsOnGround && Input.Down( "Duck" );
+
+		if ( WantsToCrouch == IsCrouching )
+			return;
+		
+		if ( WantsToCrouch )
+		{
+			CharacterController.Height = DuckHeight;
+			IsCrouching = true;
+		}
+		else
+		{
+			if ( !CanUncrouch() )
+				return;
+
+			CharacterController.Height = StandHeight;
+			IsCrouching = false;
+		}
+	}
+
+	protected virtual void DoMovementInput()
+	{
+		BuildWishVelocity();
+
+		if ( CharacterController.IsOnGround && Input.Down( "Jump" ) )
+		{
+			CharacterController.Punch( Vector3.Up * 300f );
+			SendJumpMessage();
+		}
+
+		if ( CharacterController.IsOnGround )
+		{
+			CharacterController.Velocity = CharacterController.Velocity.WithZ( 0f );
+			CharacterController.Accelerate( WishVelocity );
+			CharacterController.ApplyFriction( 4.0f );
+		}
+		else
+		{
+			CharacterController.Velocity -= Gravity * Time.Delta * 0.5f;
+			CharacterController.Accelerate( WishVelocity.ClampLength( 50f ) );
+			CharacterController.ApplyFriction( 0.1f );
+		}
+
+		CharacterController.Move();
+
+		if ( !CharacterController.IsOnGround )
+		{
+			CharacterController.Velocity -= Gravity * Time.Delta * 0.5f;
+			LastUngroundedTime = 0f;
+		}
+		else
+		{
+			CharacterController.Velocity = CharacterController.Velocity.WithZ( 0 );
+			LastGroundedTime = 0f;
+		}
+
+		Transform.Rotation = Rotation.FromYaw( EyeAngles.ToRotation().Yaw() );
 	}
 
 	protected override void OnFixedUpdate()
@@ -192,43 +282,8 @@ public class PlayerController : Component, IHealthComponent
 		if ( IsProxy )
 			return;
 
-		BuildWishVelocity();
-
-		var cc = GameObject.Components.Get<CharacterController>();
-
-		if ( cc.IsOnGround && Input.Down( "Jump" ) )
-		{
-			var groundFactor = 1.0f;
-			var multiplier = 268.3281572999747f * 1.2f;
-			cc.Punch( Vector3.Up * multiplier * groundFactor );
-			SendJumpMessage();
-		}
-
-		if ( cc.IsOnGround )
-		{
-			cc.Velocity = cc.Velocity.WithZ( 0 );
-			cc.Accelerate( WishVelocity );
-			cc.ApplyFriction( 4.0f );
-		}
-		else
-		{
-			cc.Velocity -= Gravity * Time.Delta * 0.5f;
-			cc.Accelerate( WishVelocity.ClampLength( 50 ) );
-			cc.ApplyFriction( 0.1f );
-		}
-
-		cc.Move();
-
-		if ( !cc.IsOnGround )
-		{
-			cc.Velocity -= Gravity * Time.Delta * 0.5f;
-		}
-		else
-		{
-			cc.Velocity = cc.Velocity.WithZ( 0 );
-		}
-
-		Transform.Rotation = Rotation.FromYaw( EyeAngles.ToRotation().Yaw() );
+		DoCrouchingInput();
+		DoMovementInput();
 
 		if ( Input.MouseWheel.y > 0 )
 			Weapons.Next();
@@ -265,7 +320,9 @@ public class PlayerController : Component, IHealthComponent
 		if ( !WishVelocity.IsNearZeroLength )
 			WishVelocity = WishVelocity.Normal;
 
-		if ( Input.Down( "Run" ) )
+		if ( IsCrouching )
+			WishVelocity *= 64f;
+		else if ( IsRunning )
 			WishVelocity *= 260f;
 		else
 			WishVelocity *= 110f;
