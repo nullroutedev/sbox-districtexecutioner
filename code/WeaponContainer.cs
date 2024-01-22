@@ -20,6 +20,24 @@ public sealed class WeaponContainer : Component
 	{
 		return All.Any( w => w.GameObject.Name == prefab.Name );
 	}
+
+	public void Clear()
+	{
+		if ( IsProxy ) return;
+
+		foreach ( var weapon in All )
+		{
+			weapon.GameObject.Destroy();
+		}
+	}
+
+	public void GiveDefault()
+	{
+		if ( IsProxy ) return;
+		if ( !StartingWeapon.IsValid() ) return;
+		
+		Give( StartingWeapon );
+	}
 	
 	public void Give( GameObject prefab, bool shouldDeploy = false )
 	{

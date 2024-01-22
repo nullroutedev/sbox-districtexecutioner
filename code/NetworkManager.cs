@@ -22,14 +22,7 @@ public class NetworkManager : Component, Component.INetworkListener
 
 	void INetworkListener.OnActive( Connection connection )
 	{
-		var player = PlayerPrefab.Clone().Components.Get<PlayerController>();
-		var spawnpoints = Scene.GetAllComponents<SpawnPoint>();
-		var randomSpawnpoint = Game.Random.FromList( spawnpoints.ToList() );
-
-		player.Transform.Position = randomSpawnpoint.Transform.Position;
-		player.Transform.Rotation = Rotation.FromYaw( randomSpawnpoint.Transform.Rotation.Yaw() );
-		player.EyeAngles = player.Transform.Rotation;
-		
-		player.GameObject.NetworkSpawn( connection );
+		var player = PlayerPrefab.Clone();
+		player.NetworkSpawn( connection );
 	}
 }

@@ -26,6 +26,8 @@ public sealed class RagdollController : Component
 	[Broadcast]
 	public void Unragdoll()
 	{
+		Physics.Renderer.Transform.LocalPosition = Vector3.Zero;
+		Physics.Renderer.Transform.LocalRotation = Rotation.Identity;
 		Physics.Enabled = false;
 	}
 }

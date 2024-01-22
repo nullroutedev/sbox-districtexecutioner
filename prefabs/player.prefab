@@ -96,7 +96,8 @@
         "__version": 0,
         "__type": "RagdollController",
         "__enabled": true,
-        "Physics": "bab4b3a2-1f75-4e9c-a1b7-c091c804dbdb"
+        "Physics": "bab4b3a2-1f75-4e9c-a1b7-c091c804dbdb",
+        "Root": "prefabs/player.prefab"
       }
     ],
     "Children": [

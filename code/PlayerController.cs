@@ -46,10 +46,9 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 
 	public void ApplyRecoil( Angles recoil )
 	{
-		if ( !IsProxy )
-		{
-			Recoil += recoil;
-		}
+		if ( IsProxy ) return;
+		
+		Recoil += recoil;
 	}
 
 	public void DoHitMarker( bool isHeadshot )
@@ -62,6 +61,28 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	{
 		var rotation = Rotation.Identity;
 		EyeAngles = rotation.Angles().WithRoll( 0f );
+	}
+
+	public async void RespawnAsync( float seconds )
+	{
+		if ( IsProxy ) return;
+
+		await Task.DelaySeconds( seconds );
+		Respawn();
+	}
+
+	public void Respawn()
+	{
+		if ( IsProxy )
+			return;
+
+		Weapons.Clear();
+		Weapons.GiveDefault();
+		
+		Ragdoll.Unragdoll();
+		MoveToSpawnPoint();
+		LifeState = LifeState.Alive;
+		Health = MaxHealth;
 	}
 	
 	[Broadcast]
@@ -123,6 +144,8 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		
 		if ( IsProxy )
 			return;
+
+		RespawnAsync( 3f );
 		
 		Deaths++;
 	}
@@ -151,16 +174,13 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 
 	protected override void OnStart()
 	{
-		if ( !IsProxy )
-		{
-			if ( Weapons.StartingWeapon.IsValid() )
-			{
-				Weapons.Give( Weapons.StartingWeapon );
-			}
-		}
-
 		Animators.Add( ShadowAnimator );
 		Animators.Add( AnimationHelper );
+
+		if ( !IsProxy )
+		{
+			Respawn();
+		}
 			
 		base.OnStart();
 	}
@@ -383,6 +403,19 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	void ITriggerListener.OnTriggerExit( Collider other )
 	{
 		
+	}
+	
+	private void MoveToSpawnPoint()
+	{
+		if ( IsProxy )
+			return;
+		
+		var spawnpoints = Scene.GetAllComponents<SpawnPoint>();
+		var randomSpawnpoint = Game.Random.FromList( spawnpoints.ToList() );
+
+		Transform.Position = randomSpawnpoint.Transform.Position;
+		Transform.Rotation = Rotation.FromYaw( randomSpawnpoint.Transform.Rotation.Yaw() );
+		EyeAngles = Transform.Rotation;
 	}
 
 	private void BuildWishVelocity()
