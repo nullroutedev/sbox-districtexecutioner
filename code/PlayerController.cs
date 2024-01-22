@@ -109,9 +109,8 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 			var attackingPlayer = attacker.Components.GetInAncestorsOrSelf<PlayerController>();
 			if ( attackingPlayer.IsValid() && !attackingPlayer.IsProxy )
 			{
-				Log.Info( "We killed a player!" );
 				// We killed this player.
-				Kills++;
+				attackingPlayer.Kills++;
 			}
 		}
 		

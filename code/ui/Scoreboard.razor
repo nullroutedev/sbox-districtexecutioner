@@ -1,4 +1,5 @@
 ﻿@using System
+@using System.Linq
 @using Sandbox;
 @inherits PanelComponent
 @namespace Facepunch.Arena
@@ -14,11 +15,13 @@
 
 		@foreach ( var entry in Networking.Connections )
 		{
-			var specialClass = string.Empty;
+			var rowClass = string.Empty;
+			var player = Scene.GetAllComponents<PlayerController>().FirstOrDefault( p => p.Network.OwnerConnection == entry );
+			
 			if ( entry == Connection.Local )
-				specialClass = "me";
+				rowClass = "me";
 
-			<div class="table-row @specialClass">
+			<div class="table-row @rowClass">
 				<div class="row-item">
 					@if ( entry.IsHost )
 					{
@@ -27,8 +30,8 @@
 
 					@entry.DisplayName
 				</div>
-				<div class="row-item">0</div>
-				<div class="row-item">0</div>
+				<div class="row-item">@( player.IsValid() ? player.Kills : 0)</div>
+				<div class="row-item">@( player.IsValid() ? player.Deaths : 0)</div>
 				<div class="row-item">@GetTime( entry )</div>
 			</div>
 		}
