@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Sandbox;
 using Sandbox.Citizen;
-using Sandbox.Network;
 
 namespace Facepunch.Arena;
 
@@ -106,11 +105,19 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	{
 		if ( attacker.IsValid() )
 		{
-			var attackingPlayer = attacker.Components.GetInAncestorsOrSelf<PlayerController>();
-			if ( attackingPlayer.IsValid() && !attackingPlayer.IsProxy )
+			var player = attacker.Components.GetInAncestorsOrSelf<PlayerController>();
+			if ( player.IsValid() )
 			{
-				// We killed this player.
-				attackingPlayer.Kills++;
+				var chat = Scene.GetAllComponents<Chat>().FirstOrDefault();
+
+				if ( chat.IsValid() )
+					chat.AddTextLocal( "💀️", $"{player.Network.OwnerConnection.DisplayName} has killed {Network.OwnerConnection.DisplayName}" );
+				
+				if ( !player.IsProxy )
+				{
+					// We killed this player.
+					player.Kills++;
+				}
 			}
 		}
 		

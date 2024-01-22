@@ -3,9 +3,9 @@
 @using Sandbox.UI;
 @inherits PanelComponent
 @implements Component.INetworkListener
+@namespace Facepunch.Arena
 
 <root>
-
 	<div class="output">
 		@foreach (var entry in Entries)
 		{
@@ -19,7 +19,6 @@
 	<div class="input">
 		<TextEntry @ref="InputBox" onsubmit="@ChatFinished"></TextEntry>
 	</div>
-	
 </root>
 
 @code
@@ -29,6 +28,19 @@
 	private List<Entry> Entries { get; set; } = new();
 	private TextEntry InputBox { get; set; }
 
+	public void AddTextLocal( string author, string message )
+	{
+		message = message.Truncate( 300 );
+
+		if ( string.IsNullOrWhiteSpace( message ) )
+			return;
+
+		Log.Info( $"{author}: {message}" );
+
+		Entries.Add( new ( author, message, 0f ) );
+		StateHasChanged();
+	}
+	
 	protected override void OnUpdate()
 	{
 		if ( InputBox is null )
@@ -57,34 +69,26 @@
 		if ( string.IsNullOrWhiteSpace( text ) )
 			return;
 
-		AddText( Sandbox.Utility.Steam.PersonaName, text );
+		SendText( Sandbox.Utility.Steam.PersonaName, text );
 	}
 
 	[Broadcast]
-	private void AddText( string author, string message )
+	private void SendText( string author, string message )
 	{
-		message = message.Truncate( 300 );
-
-		if ( string.IsNullOrWhiteSpace( message ) )
-			return;
-
-		Log.Info( $"{author}: {message}" );
-
-		Entries.Add( new ( author, message, 0f ) );
-		StateHasChanged();
+		AddTextLocal( author, message );
 	}
 
 	void INetworkListener.OnConnected( Connection channel )
 	{
 		if ( IsProxy ) return;
 
-		AddText( "🛎️", $"{channel.DisplayName} has joined the game" );
+		SendText( "🛎️", $"{channel.DisplayName} has joined the game" );
 	}
 
 	void INetworkListener.OnDisconnected( Connection channel )
 	{
 		if ( IsProxy ) return;
 
-		AddText(  "💨", $"{channel.DisplayName} has left the game" );
+		SendText(  "💨", $"{channel.DisplayName} has left the game" );
 	}
 }

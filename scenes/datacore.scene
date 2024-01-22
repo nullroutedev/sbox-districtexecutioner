@@ -91,6 +91,11 @@
         },
         {
           "__version": 0,
+          "__type": "Chat",
+          "__enabled": true
+        },
+        {
+          "__version": 0,
           "__type": "Hud",
           "__enabled": true
         }
@@ -130,28 +135,6 @@
           "__type": "NetworkManager",
           "__enabled": true,
           "PlayerPrefab": "prefabs/player.prefab"
-        }
-      ]
-    },
-    {
-      "Id": "1eec5a87-d016-47a9-ae88-7f2994f9f47f",
-      "Name": "UI",
-      "Position": "-839.3,-295.0071,1001.369",
-      "Enabled": true,
-      "Components": [
-        {
-          "__version": 0,
-          "__type": "ScreenPanel",
-          "__enabled": true,
-          "AutoScreenScale": true,
-          "Opacity": 1,
-          "Scale": 1,
-          "ZIndex": 100
-        },
-        {
-          "__version": 0,
-          "__type": "Chat",
-          "__enabled": true
         }
       ]
     },
