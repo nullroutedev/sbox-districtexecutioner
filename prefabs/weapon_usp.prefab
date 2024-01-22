@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "5d86a372-3508-4a4d-9bf7-c721759154c8",
+    "Id": "c9c9541b-0b6d-44b1-8b47-c9b6380ec82a",
     "Name": "weapon_usp",
     "Scale": "1.5,1.5,1.5",
     "Enabled": true,
@@ -32,9 +32,11 @@
         "FireRate": 3,
         "FireSound": "sounds/guns/m1911/pistol_shoot.sound",
         "HoldType": "Pistol",
+        "ImpactEffect": "particles/impact.generic.vpcf",
         "IsDeployed": false,
         "IsReloading": false,
         "MuzzleFlash": "particles/pistol_muzzleflash.vpcf",
+        "MuzzleSmoke": "particles/impact.generic.smokepuff.vpcf",
         "Recoil": "-30,0,0",
         "ReloadSoundSequence": "sounds/guns/m1911/reload/m1911.reload.sndseq",
         "ReloadTime": 1.5,

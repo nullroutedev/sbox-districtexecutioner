@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "ebaf3ed7-c096-47fd-8b41-064ce0411d5b",
+    "Id": "04023c5b-8c50-4d88-b742-f84c74517824",
     "Name": "weapon_mp5",
     "Enabled": true,
     "Components": [
@@ -18,9 +18,11 @@
         "FireRate": 8,
         "FireSound": "sounds/guns/mp5/smg1_shoot.sound",
         "HoldType": "Rifle",
+        "ImpactEffect": "particles/impact.generic.vpcf",
         "IsDeployed": false,
         "IsReloading": false,
         "MuzzleFlash": "particles/pistol_muzzleflash.vpcf",
+        "MuzzleSmoke": "particles/impact.generic.smokepuff.vpcf",
         "Recoil": "-40,5,0",
         "ReloadSoundSequence": "sounds/guns/mp5/reload/mp5.reload.sndseq",
         "ReloadTime": 2,
@@ -29,7 +31,7 @@
     ],
     "Children": [
       {
-        "Id": "896b4393-5ac1-444a-b299-6545962f294e",
+        "Id": "f8b97175-49ea-4233-aee7-582d5b2e6509",
         "Name": "Offset",
         "Position": "1.646654,0,-4.321783",
         "Scale": "1.5,1.5,1.5",

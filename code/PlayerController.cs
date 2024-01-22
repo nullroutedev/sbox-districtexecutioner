@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Sandbox;
@@ -7,7 +8,7 @@ namespace Facepunch.Arena;
 
 [Group( "Arena" )]
 [Title( "Player Controller" )]
-public class PlayerController : Component
+public class PlayerController : Component, IHealthComponent
 {
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
@@ -22,7 +23,10 @@ public class PlayerController : Component
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
 	[Property] public bool SicknessMode { get; set; }
-	
+
+	[Sync, Property] public float MaxHealth { get; private set; } = 100f;
+	[Sync] public LifeState LifeState { get; private set; } = LifeState.Alive;
+	[Sync] public float Health { get; private set; } = 100f;
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
 
@@ -40,6 +44,40 @@ public class PlayerController : Component
 	{
 		var rotation = Rotation.Identity;
 		EyeAngles = rotation.Angles().WithRoll( 0f );
+	}
+	
+	[Broadcast]
+	public void TakeDamage( DamageType type, float damage, Vector3 position, Vector3 force, Guid attackerId )
+	{
+		if ( LifeState == LifeState.Dead )
+			return;
+		
+		if ( type == DamageType.Bullet )
+		{
+			Scene.SceneWorld.OneShotParticle( Task, "particles/impact.flesh.bloodpuff.vpcf", p =>
+			{
+				p.SetControlPoint( 0, position );
+				p.SetControlPoint( 0, Rotation.LookAt( force.Normal * -1f ) );
+			} );
+		}
+		
+		if ( IsProxy )
+			return;
+
+		Health = MathF.Max( Health - damage, 0f );
+
+		var attacker = Scene.Directory.FindByGuid( attackerId );
+		
+		if ( Health <= 0f )
+		{
+			LifeState = LifeState.Dead;
+			OnKilled( attacker );
+		}
+	}
+
+	protected virtual void OnKilled( GameObject attacker )
+	{
+		
 	}
 	
 	protected override void OnAwake()

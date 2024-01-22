@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using Sandbox;
 using Sandbox.Citizen;
 
@@ -13,6 +11,8 @@ public abstract class WeaponComponent : Component
 	[Property] public float FireRate { get; set; } = 3f;
 	[Property] public float Spread { get; set; } = 0.01f;
 	[Property] public Angles Recoil { get; set; }
+	[Property] public float DamageForce { get; set; } = 5f;
+	[Property] public float Damage { get; set; } = 10f;
 	[Property] public AmmoType AmmoType { get; set; } = AmmoType.Pistol;
 	[Property] public int DefaultAmmo { get; set; } = 60;
 	[Property] public int ClipSize { get; set; } = 30;
@@ -22,6 +22,8 @@ public abstract class WeaponComponent : Component
 	[Property] public SoundEvent EmptyClipSound { get; set; }
 	[Property] public SoundSequenceData ReloadSoundSequence { get; set; }
 	[Property] public ParticleSystem MuzzleFlash { get; set; }
+	[Property] public ParticleSystem ImpactEffect { get; set; }
+	[Property] public ParticleSystem MuzzleSmoke { get; set; }
 	
 	[Sync, Property] public bool IsReloading { get; set; }
 	[Sync, Property, Change( nameof( OnIsDeployedChanged ) )] public bool IsDeployed { get; set; }
@@ -55,12 +57,38 @@ public abstract class WeaponComponent : Component
 		var trace = Scene.Trace.Ray( startPos, endPos )
 			.IgnoreGameObjectHierarchy( GameObject.Root )
 			.UsePhysicsWorld()
-			.WithAnyTags( "solid" )
+			.UseHitboxes()
 			.Run();
-		
+
+		var damage = Damage;
 		var origin = attachment?.Position ?? startPos;
 
-		SendAttackMessage( origin, endPos, trace.Distance );
+		SendAttackMessage( origin, trace.EndPosition, trace.Distance );
+
+		IHealthComponent damageable = null;
+		if ( trace.Component.IsValid() )
+			damageable = trace.Component.Components.GetInAncestorsOrSelf<IHealthComponent>();
+
+		if ( damageable is not null )
+		{
+			if ( trace.Hitbox is not null && trace.Hitbox.Tags.Has( "head" ) )
+			{
+				Sound.Play( "hitmarker.headshot" );
+				damage *= 2f;
+			}
+			else
+			{
+				Sound.Play( "hitmarker.hit" );
+			}
+			
+			damageable.TakeDamage( DamageType.Bullet, damage, trace.EndPosition, trace.Direction * DamageForce, GameObject.Id );
+		}
+		else if ( trace.Hit )
+		{
+			SendImpactMessage( trace.EndPosition, trace.Normal );
+			Sound.Play( "hitmarker.hit" );
+		}
+		
 		NextAttackTime = 1f / FireRate;
 		AmmoInClip--;
 
@@ -206,6 +234,19 @@ public abstract class WeaponComponent : Component
 	}
 
 	[Broadcast]
+	private void SendImpactMessage( Vector3 position, Vector3 normal )
+	{
+		if ( ImpactEffect is not null )
+		{
+			Scene.SceneWorld.OneShotParticle( Task, ImpactEffect.ResourcePath, p =>
+			{
+				p.SetControlPoint( 0, position );
+				p.SetControlPoint( 0, Rotation.LookAt( normal ) );
+			} );
+		}
+	}
+
+	[Broadcast]
 	private void SendAttackMessage( Vector3 startPos, Vector3 endPos, float distance )
 	{
 		Scene.SceneWorld.OneShotParticle( Task, "particles/tracer/trail_smoke.vpcf", p =>
@@ -218,6 +259,22 @@ public abstract class WeaponComponent : Component
 		if ( MuzzleFlash is not null )
 		{
 			Scene.SceneWorld.OneShotParticle( Task, MuzzleFlash.ResourcePath, p =>
+			{
+				if ( !ModelRenderer.IsValid() )
+					return;
+				
+				var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
+
+				if ( transform.HasValue )
+				{
+					p.SetControlPoint( 0, transform.Value );
+				}
+			} );
+		}
+		
+		if ( MuzzleSmoke is not null )
+		{
+			Scene.SceneWorld.OneShotParticle( Task, MuzzleSmoke.ResourcePath, p =>
 			{
 				if ( !ModelRenderer.IsValid() )
 					return;
