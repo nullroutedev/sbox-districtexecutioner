@@ -86,7 +86,6 @@ public abstract class WeaponComponent : Component
 		else if ( trace.Hit )
 		{
 			SendImpactMessage( trace.EndPosition, trace.Normal );
-			Sound.Play( "hitmarker.hit" );
 		}
 		
 		NextAttackTime = 1f / FireRate;
