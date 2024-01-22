@@ -31,6 +31,7 @@ public abstract class WeaponComponent : Component
 	private SoundSequence ReloadSound { get; set; }
 	private TimeUntil ReloadFinishTime { get; set; }
 	private TimeUntil NextAttackTime { get; set; }
+	private bool Initialized { get; set; }
 	
 	public virtual bool DoPrimaryAttack()
 	{
@@ -98,6 +99,10 @@ public abstract class WeaponComponent : Component
 	{
 		if ( !IsDeployed )
 			OnHolstered();
+		else
+			OnDeployed();
+
+		Initialized = true;
 		
 		base.OnStart();
 	}
@@ -137,10 +142,10 @@ public abstract class WeaponComponent : Component
 		ReloadSound?.Stop();
 	}
 
-	protected override void OnEnabled()
+	protected override void OnAwake()
 	{
-		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
-		base.OnEnabled();
+		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>( true );
+		base.OnAwake();
 	}
 
 	protected override void OnUpdate()
@@ -167,6 +172,9 @@ public abstract class WeaponComponent : Component
 	
 	private void OnIsDeployedChanged( bool oldValue, bool newValue )
 	{
+		if ( !Initialized )
+			return;
+		
 		if ( oldValue == newValue )
 			return;
 		
@@ -211,6 +219,9 @@ public abstract class WeaponComponent : Component
 		{
 			Scene.SceneWorld.OneShotParticle( Task, MuzzleFlash.ResourcePath, p =>
 			{
+				if ( !ModelRenderer.IsValid() )
+					return;
+				
 				var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
 
 				if ( transform.HasValue )
