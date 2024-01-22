@@ -7,17 +7,13 @@ namespace Facepunch.Arena;
 
 public static class Extensions
 {
-	public static async void OneShotParticle( this SceneWorld world, TaskSource ts, string effectPath, Action<SceneParticles> callback = null )
+	public static async void PlayUntilFinished( this SceneParticles particles, TaskSource source )
 	{
-		var particles = new SceneParticles( world, effectPath );
-
-		callback?.Invoke( particles );
-
 		try
 		{
 			while ( !particles.Finished )
 			{
-				await ts.Frame();
+				await source.Frame();
 				particles.Simulate( Time.Delta );
 			}
 		}

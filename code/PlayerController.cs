@@ -54,11 +54,10 @@ public class PlayerController : Component, IHealthComponent
 		
 		if ( type == DamageType.Bullet )
 		{
-			Scene.SceneWorld.OneShotParticle( Task, "particles/impact.flesh.bloodpuff.vpcf", p =>
-			{
-				p.SetControlPoint( 0, position );
-				p.SetControlPoint( 0, Rotation.LookAt( force.Normal * -1f ) );
-			} );
+			var p = new SceneParticles( Scene.SceneWorld, "particles/impact.flesh.bloodpuff.vpcf" );
+			p.SetControlPoint( 0, position );
+			p.SetControlPoint( 0, Rotation.LookAt( force.Normal * -1f ) );
+			p.PlayUntilFinished( Task );
 		}
 		
 		if ( IsProxy )

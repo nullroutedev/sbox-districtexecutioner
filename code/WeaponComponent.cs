@@ -235,56 +235,45 @@ public abstract class WeaponComponent : Component
 	[Broadcast]
 	private void SendImpactMessage( Vector3 position, Vector3 normal )
 	{
-		if ( ImpactEffect is not null )
-		{
-			Scene.SceneWorld.OneShotParticle( Task, ImpactEffect.ResourcePath, p =>
-			{
-				p.SetControlPoint( 0, position );
-				p.SetControlPoint( 0, Rotation.LookAt( normal ) );
-			} );
-		}
+		if ( ImpactEffect is null ) return;
+
+		var p = new SceneParticles( Scene.SceneWorld, ImpactEffect );
+		p.SetControlPoint( 0, position );
+		p.SetControlPoint( 0, Rotation.LookAt( normal ) );
+		p.PlayUntilFinished( Task );
 	}
 
 	[Broadcast]
 	private void SendAttackMessage( Vector3 startPos, Vector3 endPos, float distance )
 	{
-		Scene.SceneWorld.OneShotParticle( Task, "particles/tracer/trail_smoke.vpcf", p =>
-		{
-			p.SetControlPoint( 0, startPos );
-			p.SetControlPoint( 1, endPos );
-			p.SetControlPoint( 2, distance );
-		} );
+		var p = new SceneParticles( Scene.SceneWorld, "particles/tracer/trail_smoke.vpcf" );
+		p.SetControlPoint( 0, startPos );
+		p.SetControlPoint( 1, endPos );
+		p.SetControlPoint( 2, distance );
+		p.PlayUntilFinished( Task );
 
 		if ( MuzzleFlash is not null )
 		{
-			Scene.SceneWorld.OneShotParticle( Task, MuzzleFlash.ResourcePath, p =>
-			{
-				if ( !ModelRenderer.IsValid() )
-					return;
-				
-				var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
+			var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
 
-				if ( transform.HasValue )
-				{
-					p.SetControlPoint( 0, transform.Value );
-				}
-			} );
+			if ( transform.HasValue )
+			{
+				p = new( Scene.SceneWorld, MuzzleFlash );
+				p.SetControlPoint( 0, transform.Value );
+				p.PlayUntilFinished( Task );
+			}
 		}
 		
 		if ( MuzzleSmoke is not null )
 		{
-			Scene.SceneWorld.OneShotParticle( Task, MuzzleSmoke.ResourcePath, p =>
-			{
-				if ( !ModelRenderer.IsValid() )
-					return;
-				
-				var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
+			var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
 
-				if ( transform.HasValue )
-				{
-					p.SetControlPoint( 0, transform.Value );
-				}
-			} );
+			if ( transform.HasValue )
+			{
+				p = new( Scene.SceneWorld, MuzzleSmoke );
+				p.SetControlPoint( 0, transform.Value );
+				p.PlayUntilFinished( Task );
+			}
 		}
 
 		if ( FireSound is not null )
