@@ -12,6 +12,6 @@ public sealed class PlayerDresser : Component, Component.INetworkSpawn
 	{
 		var clothing = new ClothingContainer();
 		clothing.Deserialize( owner.GetUserData( "avatar" ) );
-		clothing.Apply( BodyRenderer );
+		clothing.ApplyWithComponent( BodyRenderer );
 	}
 }
