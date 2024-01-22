@@ -15,7 +15,9 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	
 	public CharacterController CharacterController { get; private set; }
 	public SkinnedModelRenderer ModelRenderer { get; private set; }
+	public RagdollController Ragdoll { get; private set; }
 	public List<CitizenAnimationHelper> Animators { get; private set; } = new();
+	public RealTimeSince LastHitmarkerTime { get; private set; }
 	public Vector3 WishVelocity { get; private set; }
 	
 	[Property] private CitizenAnimationHelper ShadowAnimator { get; set; }
@@ -35,6 +37,8 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	[Sync] public Angles EyeAngles { get; set; }
 	[Sync] public bool IsRunning { get; set; }
 	[Sync] public bool IsCrouching { get; set; }
+	[Sync] public int Deaths { get; private set; }
+	[Sync] public int Kills { get; private set; }
 
 	private RealTimeSince LastGroundedTime { get; set; }
 	private RealTimeSince LastUngroundedTime { get; set; }
@@ -47,6 +51,12 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		{
 			Recoil += recoil;
 		}
+	}
+
+	public void DoHitMarker( bool isHeadshot )
+	{
+		Sound.Play( isHeadshot ? "hitmarker.headshot" : "hitmarker.hit" );
+		LastHitmarkerTime = 0f;
 	}
 
 	public void ResetViewAngles()
@@ -73,13 +83,12 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 			return;
 
 		Health = MathF.Max( Health - damage, 0f );
-
-		var attacker = Scene.Directory.FindByGuid( attackerId );
 		
 		if ( Health <= 0f )
 		{
 			LifeState = LifeState.Dead;
-			OnKilled( attacker );
+			Ragdoll.Ragdoll( position, force );
+			SendKilledMessage( attackerId );
 		}
 	}
 
@@ -95,7 +104,21 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 
 	protected virtual void OnKilled( GameObject attacker )
 	{
+		if ( attacker.IsValid() )
+		{
+			var attackingPlayer = attacker.Components.GetInAncestorsOrSelf<PlayerController>();
+			if ( attackingPlayer.IsValid() && !attackingPlayer.IsProxy )
+			{
+				Log.Info( "We killed a player!" );
+				// We killed this player.
+				Kills++;
+			}
+		}
 		
+		if ( IsProxy )
+			return;
+		
+		Deaths++;
 	}
 	
 	protected override void OnAwake()
@@ -103,7 +126,11 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		base.OnAwake();
 		
 		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+		
 		CharacterController = Components.GetInDescendantsOrSelf<CharacterController>();
+		CharacterController.IgnoreLayers.Add( "player" );
+		
+		Ragdoll = Components.GetInDescendantsOrSelf<RagdollController>();
 
 		if ( CharacterController.IsValid() )
 		{
@@ -143,6 +170,22 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		{
 			ModelRenderer.SetBodyGroup( "head", IsProxy ? 0 : 1 );
 
+			var shadowRenderer = ShadowAnimator.Components.Get<SkinnedModelRenderer>( true );
+
+			if ( Ragdoll.IsRagdolled )
+			{
+				ModelRenderer.RenderType = Sandbox.ModelRenderer.ShadowRenderType.On;
+				shadowRenderer.Enabled = false;
+			}
+			else
+			{
+				ModelRenderer.RenderType = IsProxy
+					? Sandbox.ModelRenderer.ShadowRenderType.On
+					: Sandbox.ModelRenderer.ShadowRenderType.Off;
+
+				shadowRenderer.Enabled = true;
+			}
+
 			var clothing = ModelRenderer.Components.GetAll<ClothingComponent>()
 				.Where( c => c.Category is Clothing.ClothingCategory.Hair
 					or Clothing.ClothingCategory.Facial
@@ -156,38 +199,47 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		
 		if ( IsProxy )
 			return;
-		
-		if ( Eye.IsValid() )
+
+		if ( !Eye.IsValid() )
+			return;
+
+		if ( Ragdoll.IsRagdolled )
 		{
-			var idealEyePos = Eye.Transform.Position;
-			var headPosition = Transform.Position + Vector3.Up * CharacterController.Height;
-			var headTrace = Scene.Trace.Ray( Transform.Position, headPosition )
-				.UsePhysicsWorld()
-				.IgnoreGameObjectHierarchy( GameObject )
-				.Run();
-
-			headPosition = headTrace.EndPosition - headTrace.Direction * 2f;
-			
-			var trace = Scene.Trace.Ray( headPosition, idealEyePos )
-				.UsePhysicsWorld()
-				.IgnoreGameObjectHierarchy( GameObject )
-				.WithAnyTags( "solid" )
-				.Radius( 2f )
-				.Run();
-			
-			Scene.Camera.Transform.Position = trace.Hit ? trace.EndPosition : idealEyePos;
-
-			if ( SicknessMode )
-				Scene.Camera.Transform.Rotation = Rotation.LookAt( Eye.Transform.Rotation.Left ) * Rotation.FromPitch( -10f );
-			else
-				Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
+			Scene.Camera.Transform.Position = Scene.Camera.Transform.Position.LerpTo( Eye.Transform.Position, Time.Delta * 32f );
+			Scene.Camera.Transform.Rotation = Rotation.Lerp( Scene.Camera.Transform.Rotation, Eye.Transform.Rotation, Time.Delta * 16f );
+			return;
 		}
+
+		var idealEyePos = Eye.Transform.Position;
+		var headPosition = Transform.Position + Vector3.Up * CharacterController.Height;
+		var headTrace = Scene.Trace.Ray( Transform.Position, headPosition )
+			.UsePhysicsWorld()
+			.IgnoreGameObjectHierarchy( GameObject )
+			.WithAnyTags( "solid" )
+			.Run();
+
+		headPosition = headTrace.EndPosition - headTrace.Direction * 2f;
+	
+		var trace = Scene.Trace.Ray( headPosition, idealEyePos )
+			.UsePhysicsWorld()
+			.IgnoreGameObjectHierarchy( GameObject )
+			.WithAnyTags( "solid" )
+			.Radius( 2f )
+			.Run();
+	
+		Scene.Camera.Transform.Position = trace.Hit ? trace.EndPosition : idealEyePos;
 		
-		base.OnPreRender();
+		if ( SicknessMode )
+			Scene.Camera.Transform.Rotation = Rotation.LookAt( Eye.Transform.Rotation.Left ) * Rotation.FromPitch( -10f );
+		else
+			Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
 	}
 
 	protected override void OnUpdate()
 	{
+		if ( Ragdoll.IsRagdolled || LifeState == LifeState.Dead )
+			return;
+		
 		if ( !IsProxy )
 		{
 			var angles = EyeAngles.Normal;
@@ -259,7 +311,7 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 			CharacterController.Accelerate( WishVelocity.ClampLength( 50f ) );
 			CharacterController.ApplyFriction( 0.1f );
 		}
-
+		
 		CharacterController.Move();
 
 		if ( !CharacterController.IsOnGround )
@@ -279,6 +331,9 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	protected override void OnFixedUpdate()
 	{
 		if ( IsProxy )
+			return;
+
+		if ( Ragdoll.IsRagdolled || LifeState == LifeState.Dead )
 			return;
 
 		DoCrouchingInput();
@@ -340,6 +395,13 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 			WishVelocity *= 260f;
 		else
 			WishVelocity *= 110f;
+	}
+
+	[Broadcast]
+	private void SendKilledMessage( Guid attackerId )
+	{
+		var attacker = Scene.Directory.FindByGuid( attackerId );
+		OnKilled( attacker );
 	}
 	
 	[Broadcast]

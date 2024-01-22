@@ -25,8 +25,12 @@ public class WeaponPickup : PickupComponent
 		{
 			var template = WeaponPrefab.Clone();
 			var templateComponent = template.Components.GetInDescendantsOrSelf<WeaponComponent>();
-			
-			player.Ammo.Give( templateComponent.AmmoType, templateComponent.DefaultAmmo );
+			var ammoToGive = templateComponent.DefaultAmmo - player.Ammo.Get( templateComponent.AmmoType );
+
+			if ( ammoToGive > 0 )
+			{
+				player.Ammo.Give( templateComponent.AmmoType, ammoToGive );
+			}
 			
 			template.DestroyImmediate();
 		}

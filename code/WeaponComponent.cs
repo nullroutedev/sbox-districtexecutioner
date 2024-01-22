@@ -66,6 +66,9 @@ public abstract class WeaponComponent : Component
 			return false;
 		}
 		
+		var player = Components.GetInAncestors<PlayerController>();
+		player.ApplyRecoil( Recoil );
+		
 		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
 		var attachment = renderer.GetAttachment( "muzzle" );
 		var startPos = Scene.Camera.Transform.Position;
@@ -92,12 +95,12 @@ public abstract class WeaponComponent : Component
 		{
 			if ( trace.Hitbox is not null && trace.Hitbox.Tags.Has( "head" ) )
 			{
-				Sound.Play( "hitmarker.headshot" );
-				damage *= 2f;
+				player.DoHitMarker( true );
+				damage *= 3f;
 			}
 			else
 			{
-				Sound.Play( "hitmarker.hit" );
+				player.DoHitMarker( false );
 			}
 			
 			damageable.TakeDamage( DamageType.Bullet, damage, trace.EndPosition, trace.Direction * DamageForce, GameObject.Id );
@@ -109,12 +112,6 @@ public abstract class WeaponComponent : Component
 		
 		NextAttackTime = 1f / FireRate;
 		AmmoInClip--;
-
-		var player = Components.GetInAncestors<PlayerController>();
-		if ( player.IsValid() )
-		{
-			player.ApplyRecoil( Recoil );
-		}
 
 		return true;
 	}
@@ -134,7 +131,7 @@ public abstract class WeaponComponent : Component
 
 		ReloadFinishTime = ReloadTime;
 		IsReloading = true;
-		AmmoInClip = taken;
+		AmmoInClip += taken;
 			
 		SendReloadMessage();
 			

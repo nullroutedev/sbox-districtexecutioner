@@ -1,6 +1,6 @@
 {
   "RootObject": {
-    "Id": "04023c5b-8c50-4d88-b742-f84c74517824",
+    "Id": "f7e72bc2-df24-470d-878d-452ce37c3908",
     "Name": "weapon_mp5",
     "Enabled": true,
     "Components": [
@@ -8,8 +8,10 @@
         "__version": 0,
         "__type": "SMG",
         "__enabled": true,
-        "AmmoType": "Pistol",
+        "AmmoType": "SMG",
         "ClipSize": 24,
+        "Damage": 10,
+        "DamageForce": 5,
         "DefaultAmmo": 60,
         "DeploySound": "sounds/guns/switch/weapon_switch.sound",
         "DeployTime": 0.5,
@@ -20,7 +22,6 @@
         "HoldType": "Rifle",
         "ImpactEffect": "particles/impact.generic.vpcf",
         "IsDeployed": false,
-        "IsReloading": false,
         "MuzzleFlash": "particles/pistol_muzzleflash.vpcf",
         "MuzzleSmoke": "particles/impact.generic.smokepuff.vpcf",
         "Recoil": "-40,5,0",
@@ -31,7 +32,7 @@
     ],
     "Children": [
       {
-        "Id": "f8b97175-49ea-4233-aee7-582d5b2e6509",
+        "Id": "a9d93982-d3c5-4fe6-9133-9405fe16a568",
         "Name": "Offset",
         "Position": "1.646654,0,-4.321783",
         "Scale": "1.5,1.5,1.5",

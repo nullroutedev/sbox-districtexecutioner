@@ -16,7 +16,7 @@ public class PickupSpawner : Component
 
 	protected override void DrawGizmos()
 	{
-		var boxSize = 4f;
+		const float boxSize = 4f;
 		var bounds = new BBox( Vector3.One * -boxSize, Vector3.One * boxSize );
 		
 		Gizmo.Hitbox.BBox( bounds );
@@ -39,7 +39,7 @@ public class PickupSpawner : Component
 	{
 		base.OnFixedUpdate();
 		
-		if ( !GameNetworkSystem.IsHost )
+		if ( !Networking.IsHost )
 			return;
 		
 		if ( Pickup.IsValid() )

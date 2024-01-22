@@ -83,6 +83,16 @@
           "Opacity": 1,
           "Scale": 1,
           "ZIndex": 100
+        },
+        {
+          "__version": 0,
+          "__type": "Scoreboard",
+          "__enabled": true
+        },
+        {
+          "__version": 0,
+          "__type": "Hud",
+          "__enabled": true
         }
       ]
     },

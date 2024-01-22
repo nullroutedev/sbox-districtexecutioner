@@ -2,7 +2,9 @@
 @inherits PanelComponent
 @namespace Facepunch.Arena
 
-@if ( Network.OwnerConnection is Connection owner ) //&& owner != Connection.Local )
+@if ( Player.IsValid() && Player.LifeState == LifeState.Alive
+	&& Network.OwnerConnection is Connection owner
+	&& owner != Connection.Local )
 {
 	<root>
 		<div class="card">
@@ -19,12 +21,14 @@
 
 @code
 {
+	private PlayerController Player { get; set; }
 	private Voice VoiceComponent { get; set; }
 
 	protected override void OnEnabled()
 	{
 		base.OnEnabled();
 		VoiceComponent = GameObject.Root.Components.GetInDescendantsOrSelf<Voice>();
+		Player = GameObject.Root.Components.GetInDescendantsOrSelf<PlayerController>();
 	}
 
 	public bool IsVoicePlaying
@@ -38,5 +42,5 @@
 		}
 	}
 	
-	protected override int BuildHash() => System.HashCode.Combine( Network.OwnerConnection, IsVoicePlaying );
+	protected override int BuildHash() => System.HashCode.Combine( Network.OwnerConnection, IsVoicePlaying, Player?.LifeState );
 }
