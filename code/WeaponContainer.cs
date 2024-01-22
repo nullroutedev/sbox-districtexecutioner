@@ -36,7 +36,7 @@ public sealed class WeaponContainer : Component
 		if ( IsProxy ) return;
 		if ( !StartingWeapon.IsValid() ) return;
 		
-		Give( StartingWeapon );
+		Give( StartingWeapon, true );
 	}
 	
 	public void Give( GameObject prefab, bool shouldDeploy = false )
@@ -67,7 +67,12 @@ public sealed class WeaponContainer : Component
 		weapon.AmmoInClip = weapon.ClipSize;
 		weapon.IsDeployed = !Deployed.IsValid();
 
-		Ammo.Give( weapon.AmmoType, weapon.DefaultAmmo );
+		var ammoToGive = weapon.DefaultAmmo - Ammo.Get( weapon.AmmoType );
+
+		if ( ammoToGive > 0 )
+		{
+			Ammo.Give( weapon.AmmoType, ammoToGive );
+		}
 		
 		weaponGo.NetworkSpawn();
 	}
