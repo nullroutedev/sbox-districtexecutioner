@@ -3,12 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Sandbox;
 using Sandbox.Citizen;
+using Sandbox.Network;
 
 namespace Facepunch.Arena;
 
 [Group( "Arena" )]
 [Title( "Player Controller" )]
-public class PlayerController : Component, IHealthComponent
+public class PlayerController : Component, Component.ITriggerListener, IHealthComponent
 {
 	[Property] public Vector3 Gravity { get; set; } = new ( 0f, 0f, 800f );
 	
@@ -119,11 +120,9 @@ public class PlayerController : Component, IHealthComponent
 	{
 		if ( !IsProxy )
 		{
-			var weapons = WeaponManager.Instance.Weapons;
-
-			foreach ( var weapon in weapons )
+			if ( Weapons.StartingWeapon.IsValid() )
 			{
-				Weapons.Give( weapon );
+				Weapons.Give( Weapons.StartingWeapon );
 			}
 		}
 
@@ -308,6 +307,21 @@ public class PlayerController : Component, IHealthComponent
 				SendReloadMessage();
 			}
 		}
+	}
+	
+	void ITriggerListener.OnTriggerEnter( Collider other )
+	{
+		var pickup = other.Components.GetInAncestorsOrSelf<PickupComponent>();
+
+		if ( pickup.IsValid() )
+		{
+			pickup.Pickup( GameObject );
+		}
+	}
+
+	void ITriggerListener.OnTriggerExit( Collider other )
+	{
+		
 	}
 
 	private void BuildWishVelocity()

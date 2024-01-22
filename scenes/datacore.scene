@@ -69,6 +69,11 @@
           "Viewport": "0,0,1,1",
           "ZFar": 10000,
           "ZNear": 0.5
+        },
+        {
+          "__version": 0,
+          "__type": "Highlight",
+          "__enabled": true
         }
       ]
     },
@@ -105,8 +110,7 @@
           "__version": 0,
           "__type": "NetworkManager",
           "__enabled": true,
-          "PlayerPrefab": "prefabs/player.prefab",
-          "SpawnpointContainer": "8f0e607d-3d88-4843-92a7-6af9fbd72840"
+          "PlayerPrefab": "prefabs/player.prefab"
         }
       ]
     },
@@ -304,6 +308,43 @@
               "__type": "SpawnPoint",
               "__enabled": true,
               "Color": "0.8902,0.31765,0.05098,1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "Id": "4073be7d-1f0e-40ba-9aa6-81335ea09c70",
+      "Name": "Pickups",
+      "Enabled": true,
+      "Children": [
+        {
+          "Id": "ea7f46de-e6e8-4562-a845-27f77cf5caf4",
+          "Name": "WeaponPickup",
+          "Position": "151.9507,2.184113,13.43349",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_mp5.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "793b5434-a8f4-4160-a3a9-30b610c2ff33",
+          "Name": "WeaponPickup",
+          "Position": "151.9507,-256.2728,13.43349",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_usp.prefab",
+              "RespawnTime": 30
             }
           ]
         }

@@ -8,23 +8,44 @@ namespace Facepunch.Arena;
 [Title( "Weapon Container" )]
 public sealed class WeaponContainer : Component
 {
+	[Property] public PrefabScene StartingWeapon { get; set; }
 	[Property] public GameObject WeaponBone { get; set; }
 	[Property] public AmmoContainer Ammo { get; set; }
 	
 	public WeaponComponent Deployed => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants ).FirstOrDefault( c => c.IsDeployed );
 	public IEnumerable<WeaponComponent> All => Components.GetAll<WeaponComponent>( FindMode.EverythingInSelfAndDescendants );
 	public bool HasAny => All.Any();
+
+	public bool Has( GameObject prefab )
+	{
+		return All.Any( w => w.GameObject.Name == prefab.Name );
+	}
 	
-	public void Give( WeaponComponent template )
+	public void Give( GameObject prefab, bool shouldDeploy = false )
 	{
 		if ( IsProxy ) return;
 
-		var weaponGo = template.GameObject.Clone();
+		var weaponGo = prefab.Clone();
+		var weapon = weaponGo.Components.GetInDescendantsOrSelf<WeaponComponent>( true );
+
+		if ( !weapon.IsValid() )
+		{
+			weaponGo.DestroyImmediate();
+			return;
+		}
+
+		if ( shouldDeploy )
+		{
+			foreach ( var w in All )
+			{
+				w.Holster();
+			}
+		}
+		
 		weaponGo.SetParent( WeaponBone );
 		weaponGo.Transform.Position = WeaponBone.Transform.Position;
 		weaponGo.Transform.Rotation = WeaponBone.Transform.Rotation;
 
-		var weapon = weaponGo.Components.GetInDescendantsOrSelf<WeaponComponent>( true );
 		weapon.AmmoInClip = weapon.ClipSize;
 		weapon.IsDeployed = !Deployed.IsValid();
 
@@ -32,8 +53,7 @@ public sealed class WeaponContainer : Component
 		
 		weaponGo.NetworkSpawn();
 	}
-
-	[Broadcast]
+	
 	public void Next()
 	{
 		if ( !HasAny ) return;
@@ -44,7 +64,7 @@ public sealed class WeaponContainer : Component
 
 		if ( deployed.IsValid() )
 		{
-			currentIndex = weapons.IndexOf( Deployed );
+			currentIndex = weapons.IndexOf( deployed );
 		}
 
 		var nextIndex = currentIndex + 1;
@@ -55,15 +75,14 @@ public sealed class WeaponContainer : Component
 		if ( nextWeapon == deployed )
 			return;
 
-		foreach ( var weapon in weapons )
+		foreach ( var weapon in weapons.Where( weapon => weapon != nextWeapon ) )
 		{
-			weapon.IsDeployed = false;
+			weapon.Holster();
 		}
-		
-		nextWeapon.IsDeployed = true;
-	}
 
-	[Broadcast]
+		nextWeapon.Deploy();
+	}
+	
 	public void Previous()
 	{
 		if ( !HasAny ) return;
@@ -74,7 +93,7 @@ public sealed class WeaponContainer : Component
 
 		if ( deployed.IsValid() )
 		{
-			currentIndex = weapons.IndexOf( Deployed );
+			currentIndex = weapons.IndexOf( deployed );
 		}
 
 		var previousIndex = currentIndex - 1;
@@ -85,11 +104,11 @@ public sealed class WeaponContainer : Component
 		if ( previousWeapon == deployed )
 			return;
 		
-		foreach ( var weapon in weapons )
+		foreach ( var weapon in weapons.Where( weapon => weapon != previousWeapon ) )
 		{
-			weapon.IsDeployed = false;
+			weapon.Holster();
 		}
-		
-		previousWeapon.IsDeployed = true;
+
+		previousWeapon.Deploy();
 	}
 }

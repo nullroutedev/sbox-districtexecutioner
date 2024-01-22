@@ -25,12 +25,13 @@
 @code
 {
 	public record Entry( string author, string message, RealTimeSince timeSinceAdded );
+	
 	private List<Entry> Entries { get; set; } = new();
 	private TextEntry InputBox { get; set; }
 
 	protected override void OnUpdate()
 	{
-		if (InputBox is null)
+		if ( InputBox is null )
 			return;
 
 		Panel.AcceptsFocus = false;
@@ -53,7 +54,7 @@
 		var text = InputBox.Text;
 		InputBox.Text = "";
 
-		if (string.IsNullOrWhiteSpace(text))
+		if ( string.IsNullOrWhiteSpace( text ) )
 			return;
 
 		AddText( Sandbox.Utility.Steam.PersonaName, text );

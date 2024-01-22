@@ -9,7 +9,7 @@ public class WeaponManager : Component
 {
 	public static WeaponManager Instance { get; private set; }
 
-	public List<WeaponComponent> Weapons { get; set; } = new();
+	public List<GameObject> Weapons { get; set; } = new();
 	
 	[Property] public List<PrefabScene> Prefabs { get; set; }
 
@@ -19,15 +19,7 @@ public class WeaponManager : Component
 
 		foreach ( var prefab in Prefabs )
 		{
-			var template = prefab.Clone();
-			var component = template.Components.GetInDescendantsOrSelf<WeaponComponent>();
-			
-			if ( component.IsValid() )
-			{
-				Weapons.Add( component );
-			}
-
-			template.Destroy();
+			Weapons.Add( prefab );
 		}
 		
 		base.OnAwake();

@@ -1,0 +1,56 @@
+{
+  "RootObject": {
+    "Id": "4b9dfd85-ee7c-4f59-bdc8-fb3ae14fed21",
+    "Name": "pickup_mp5",
+    "Scale": "1.5,1.5,1.5",
+    "Enabled": true,
+    "Components": [
+      {
+        "__version": 0,
+        "__type": "ModelRenderer",
+        "__enabled": true,
+        "BodyGroups": 3,
+        "MaterialGroup": null,
+        "MaterialOverride": null,
+        "Model": "models/weapons/sbox_smg_mp5/w_mp5.vmdl",
+        "RenderType": "On",
+        "Tint": "1,1,1,1"
+      },
+      {
+        "__version": 0,
+        "__type": "WeaponPickup",
+        "__enabled": true,
+        "Collider": "4b9dfd85-ee7c-4f59-bdc8-fb3ae14fed21",
+        "PickupSound": "sounds/item.pickup.sound",
+        "WeaponPrefab": "prefabs/weapon_mp5.prefab"
+      },
+      {
+        "__version": 0,
+        "__type": "SphereCollider",
+        "__enabled": true,
+        "Center": "0,0,3",
+        "IsTrigger": false,
+        "Radius": 10,
+        "Static": false,
+        "Surface": null
+      },
+      {
+        "__version": 0,
+        "__type": "HighlightOutline",
+        "__enabled": true,
+        "Color": "0.52157,0.72549,0.36471,1",
+        "InsideColor": "0,0,0,0",
+        "InsideObscuredColor": "0,0,0,0",
+        "Material": null,
+        "ObscuredColor": "0,0,0,0",
+        "Width": 0.1
+      }
+    ]
+  },
+  "ShowInMenu": false,
+  "MenuPath": null,
+  "MenuIcon": null,
+  "__references": [
+    "facepunch.w_mp5"
+  ]
+}

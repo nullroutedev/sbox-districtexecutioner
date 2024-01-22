@@ -24,16 +24,35 @@ public abstract class WeaponComponent : Component
 	[Property] public ParticleSystem MuzzleFlash { get; set; }
 	[Property] public ParticleSystem ImpactEffect { get; set; }
 	[Property] public ParticleSystem MuzzleSmoke { get; set; }
+	[Property] public bool IsDeployed { get; set; }
 	
-	[Sync, Property] public bool IsReloading { get; set; }
-	[Sync, Property, Change( nameof( OnIsDeployedChanged ) )] public bool IsDeployed { get; set; }
+	[Sync] public bool IsReloading { get; set; }
 	[Sync] public int AmmoInClip { get; set; }
 	
 	private SkinnedModelRenderer ModelRenderer { get; set; }
 	private SoundSequence ReloadSound { get; set; }
 	private TimeUntil ReloadFinishTime { get; set; }
 	private TimeUntil NextAttackTime { get; set; }
-	private bool Initialized { get; set; }
+
+	[Broadcast]
+	public void Deploy()
+	{
+		if ( !IsDeployed )
+		{
+			IsDeployed = true;
+			OnDeployed();
+		}
+	}
+
+	[Broadcast]
+	public void Holster()
+	{
+		if ( IsDeployed )
+		{
+			OnHolstered();
+			IsDeployed = false;
+		}
+	}
 	
 	public virtual bool DoPrimaryAttack()
 	{
@@ -124,12 +143,10 @@ public abstract class WeaponComponent : Component
 
 	protected override void OnStart()
 	{
-		if ( !IsDeployed )
-			OnHolstered();
-		else
+		if ( IsDeployed )
 			OnDeployed();
-
-		Initialized = true;
+		else
+			OnHolstered();
 		
 		base.OnStart();
 	}
@@ -192,23 +209,10 @@ public abstract class WeaponComponent : Component
 		if ( IsDeployed )
 		{
 			OnHolstered();
+			IsDeployed = false;
 		}
 		
 		base.OnDestroy();
-	}
-	
-	private void OnIsDeployedChanged( bool oldValue, bool newValue )
-	{
-		if ( !Initialized )
-			return;
-		
-		if ( oldValue == newValue )
-			return;
-		
-		if ( newValue )
-			OnDeployed();
-		else
-			OnHolstered();
 	}
 
 	[Broadcast]
