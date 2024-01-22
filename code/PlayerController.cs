@@ -42,14 +42,14 @@ public class PlayerController : Component
 		EyeAngles = rotation.Angles().WithRoll( 0f );
 	}
 	
-	protected override void OnEnabled()
+	protected override void OnAwake()
 	{
-		base.OnEnabled();
-
+		base.OnAwake();
+		
+		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
+		
 		if ( IsProxy )
 			return;
-
-		ModelRenderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
 
 		ResetViewAngles();
 	}
@@ -76,7 +76,25 @@ public class PlayerController : Component
 	{
 		base.OnPreRender();
 
-		if ( IsProxy || !Scene.IsValid() || !Scene.Camera.IsValid() )
+		if ( !Scene.IsValid() || !Scene.Camera.IsValid() )
+			return;
+		
+		if ( ModelRenderer.IsValid() )
+		{
+			ModelRenderer.SetBodyGroup( "head", IsProxy ? 0 : 1 );
+
+			var clothing = ModelRenderer.Components.GetAll<ClothingComponent>()
+				.Where( c => c.Category is Clothing.ClothingCategory.Hair
+					or Clothing.ClothingCategory.Facial
+					or Clothing.ClothingCategory.Hat );
+
+			foreach ( var c in clothing )
+			{
+				c.ModelRenderer.RenderType = IsProxy ? Sandbox.ModelRenderer.ShadowRenderType.On : Sandbox.ModelRenderer.ShadowRenderType.ShadowsOnly;
+			}
+		}
+		
+		if ( IsProxy )
 			return;
 		
 		if ( Eye.IsValid() )
@@ -96,11 +114,6 @@ public class PlayerController : Component
 				Scene.Camera.Transform.Rotation = Rotation.LookAt( Eye.Transform.Rotation.Left ) * Rotation.FromPitch( -10f );
 			else
 				Scene.Camera.Transform.Rotation = EyeAngles.ToRotation() * Rotation.FromPitch( -10f );
-		}
-
-		if ( ModelRenderer.IsValid() )
-		{
-			ModelRenderer.SetBodyGroup( "head", 1 );
 		}
 		
 		base.OnPreRender();

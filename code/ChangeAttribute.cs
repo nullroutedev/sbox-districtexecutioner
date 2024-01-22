@@ -18,16 +18,9 @@ public class ChangeAttribute : Attribute
 	internal static void OnPropertySet<T>( WrappedPropertySet<T> p )
 	{
 		var attribute = p.Attributes.OfType<ChangeAttribute>().FirstOrDefault();
-		Assert.NotNull( attribute );
-		
 		var type = TypeLibrary.GetType( p.TypeName );
-		Assert.NotNull( type );
-		
 		var method = type.GetMethod( attribute.Callback );
-		Assert.NotNull( method );
-		
 		var property = TypeLibrary.GetMemberByIdent( p.MemberIdent ) as PropertyDescription;
-		Assert.NotNull( property );
 		
 		var oldValue = property.GetValue( p.Object );
 		
