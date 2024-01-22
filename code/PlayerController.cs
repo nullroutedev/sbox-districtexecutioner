@@ -101,7 +101,7 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		
 		if ( IsProxy )
 			return;
-
+		
 		Health = MathF.Max( Health - damage, 0f );
 		
 		if ( Health <= 0f )
