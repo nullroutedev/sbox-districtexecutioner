@@ -5,6 +5,7 @@ namespace Facepunch.Arena;
 
 [Group( "Arena" )]
 [Title( "Pickup Spawner" )]
+[Icon( "paid" )]
 public class PickupSpawner : Component
 {
 	[Property] public GameObject PickupPrefab { get; set; }
@@ -12,6 +13,21 @@ public class PickupSpawner : Component
 	
 	private TimeUntil? TimeUntilRespawn { get; set; }
 	private PickupComponent Pickup { get; set; }
+
+	protected override void DrawGizmos()
+	{
+		var boxSize = 4f;
+		var bounds = new BBox( Vector3.One * -boxSize, Vector3.One * boxSize );
+		
+		Gizmo.Hitbox.BBox( bounds );
+		
+		Gizmo.Draw.Color = Color.Cyan.WithAlpha( (Gizmo.IsHovered || Gizmo.IsSelected) ? 0.5f : 0.2f );
+		Gizmo.Draw.LineBBox( bounds );
+		Gizmo.Draw.SolidBox( bounds );
+		
+		Gizmo.Draw.Color = Color.Cyan.WithAlpha( (Gizmo.IsHovered || Gizmo.IsSelected) ? 0.8f : 0.6f );
+		Gizmo.Draw.Text( PickupPrefab?.Name ?? "Pickup", global::Transform.Zero.WithPosition( Vector3.Up * (boxSize + 4f) ), "Roboto", 14f );
+	}
 
 	protected override void OnStart()
 	{

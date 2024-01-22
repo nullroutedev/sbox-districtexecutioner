@@ -1,6 +1,5 @@
 using System;
 using Sandbox;
-using Sandbox.Network;
 
 namespace Facepunch.Arena;
 

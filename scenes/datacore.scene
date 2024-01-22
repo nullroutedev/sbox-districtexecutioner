@@ -74,6 +74,15 @@
           "__version": 0,
           "__type": "Highlight",
           "__enabled": true
+        },
+        {
+          "__version": 0,
+          "__type": "ScreenPanel",
+          "__enabled": true,
+          "AutoScreenScale": true,
+          "Opacity": 1,
+          "Scale": 1,
+          "ZIndex": 100
         }
       ]
     },
@@ -320,8 +329,53 @@
       "Children": [
         {
           "Id": "ea7f46de-e6e8-4562-a845-27f77cf5caf4",
-          "Name": "WeaponPickup",
-          "Position": "151.9507,2.184113,13.43349",
+          "Name": "pickup_mp5",
+          "Position": "457.9744,1018.006,13.43359",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_mp5.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "ae08fb4d-4e65-4857-ac7e-70620de664ff",
+          "Name": "pickup_mp5",
+          "Position": "-662.1463,255.3201,13.43349",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_mp5.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "e42b31d1-c9d2-452a-826c-96d39fda6fb8",
+          "Name": "pickup_mp5",
+          "Position": "-46.12767,-1107.675,119.6582",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_mp5.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "5a10be26-7177-4d78-ab86-ce72b95ac3f4",
+          "Name": "pickup_mp5",
+          "Position": "-137.0698,1.605691,480.6712",
           "Enabled": true,
           "Components": [
             {
@@ -335,8 +389,53 @@
         },
         {
           "Id": "793b5434-a8f4-4160-a3a9-30b610c2ff33",
-          "Name": "WeaponPickup",
+          "Name": "pickup_usp",
           "Position": "151.9507,-256.2728,13.43349",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_usp.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "e3db8ec4-ed38-4d77-adea-71d98e8424d5",
+          "Name": "pickup_usp",
+          "Position": "-504.3683,1086.62,13.43345",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_usp.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "62074bfa-0500-4b07-901e-465dfd576adc",
+          "Name": "pickup_usp",
+          "Position": "-26.94098,1137.205,116.7191",
+          "Enabled": true,
+          "Components": [
+            {
+              "__version": 0,
+              "__type": "PickupSpawner",
+              "__enabled": true,
+              "PickupPrefab": "prefabs/pickups/pickup_usp.prefab",
+              "RespawnTime": 30
+            }
+          ]
+        },
+        {
+          "Id": "2854f726-85d9-4aab-8931-0bec6d1551d0",
+          "Name": "pickup_usp",
+          "Position": "919.1946,282.2023,17.69174",
           "Enabled": true,
           "Components": [
             {
