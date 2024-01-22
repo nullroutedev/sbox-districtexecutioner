@@ -25,10 +25,12 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
 	[Property] public CitizenAnimationHelper AnimationHelper { get; set; }
+	[Property] public SoundEvent HurtSound { get; set; }
 	[Property] public bool SicknessMode { get; set; }
 	[Property] public bool EnableCrouching { get; set; }
 	[Property] public float StandHeight { get; set; } = 64f;
 	[Property] public float DuckHeight { get; set; } = 28f;
+	[Property] public float HealthRegenPerSecond { get; set; } = 10f;
 
 	[Sync, Property] public float MaxHealth { get; private set; } = 100f;
 	[Sync] public LifeState LifeState { get; private set; } = LifeState.Alive;
@@ -41,6 +43,7 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 
 	private RealTimeSince LastGroundedTime { get; set; }
 	private RealTimeSince LastUngroundedTime { get; set; }
+	private RealTimeSince TimeSinceDamaged { get; set; }
 	private bool WantsToCrouch { get; set; }
 	private Angles Recoil { get; set; }
 
@@ -97,11 +100,18 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 			p.SetControlPoint( 0, position );
 			p.SetControlPoint( 0, Rotation.LookAt( force.Normal * -1f ) );
 			p.PlayUntilFinished( Task );
+
+			if ( HurtSound is not null )
+			{
+				Log.Info( "PLaying: " + HurtSound );
+				Sound.Play( HurtSound, Transform.Position );
+			}
 		}
 		
 		if ( IsProxy )
 			return;
-		
+
+		TimeSinceDamaged = 0f;
 		Health = MathF.Max( Health - damage, 0f );
 		
 		if ( Health <= 0f )
@@ -361,6 +371,12 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 
 		if ( Ragdoll.IsRagdolled || LifeState == LifeState.Dead )
 			return;
+
+		if ( TimeSinceDamaged > 3f )
+		{
+			Health += HealthRegenPerSecond * Time.Delta;
+			Health = MathF.Min( Health, MaxHealth );
+		}
 
 		DoCrouchingInput();
 		DoMovementInput();
