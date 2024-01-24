@@ -56,7 +56,7 @@
           "Orthographic": false,
           "OrthographicHeight": 1204,
           "Priority": 1,
-          "RenderExcludeTags": "",
+          "RenderExcludeTags": "viewmodel",
           "RenderTags": "",
           "TargetEye": "None",
           "Viewport": "0,0,1,1",
@@ -98,7 +98,8 @@
                 "t": 1,
                 "c": "1,1,1,1"
               }
-            ]
+            ],
+            "alpha": []
           },
           "BloomCurve": [
             {
@@ -137,7 +138,7 @@
           "__type": "Vignette",
           "Center": "0.5,0.5",
           "Color": "0,0,0,1",
-          "Intensity": 0.55,
+          "Intensity": 0.47,
           "Roundness": 0.9,
           "Smoothness": 0.9
         },

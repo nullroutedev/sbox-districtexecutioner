@@ -13,6 +13,7 @@ public abstract class WeaponComponent : Component
 	[Property] public Angles Recoil { get; set; }
 	[Property] public float DamageForce { get; set; } = 5f;
 	[Property] public float Damage { get; set; } = 10f;
+	[Property] public GameObject ViewModelPrefab { get; set; }
 	[Property] public AmmoType AmmoType { get; set; } = AmmoType.Pistol;
 	[Property] public int DefaultAmmo { get; set; } = 60;
 	[Property] public int ClipSize { get; set; } = 30;
@@ -28,11 +29,15 @@ public abstract class WeaponComponent : Component
 	
 	[Sync] public bool IsReloading { get; set; }
 	[Sync] public int AmmoInClip { get; set; }
+
+	public bool HasViewModel => ViewModel.IsValid();
 	
 	private SkinnedModelRenderer ModelRenderer { get; set; }
 	private SoundSequence ReloadSound { get; set; }
+	private ViewModel ViewModel { get; set; }
 	private TimeUntil ReloadFinishTime { get; set; }
 	private TimeUntil NextAttackTime { get; set; }
+	private SkinnedModelRenderer EffectRenderer => ViewModel.IsValid() ? ViewModel.ModelRenderer : ModelRenderer;
 
 	[Broadcast]
 	public void Deploy()
@@ -69,8 +74,7 @@ public abstract class WeaponComponent : Component
 		var player = Components.GetInAncestors<PlayerController>();
 		player.ApplyRecoil( Recoil );
 		
-		var renderer = Components.GetInDescendantsOrSelf<SkinnedModelRenderer>();
-		var attachment = renderer.GetAttachment( "muzzle" );
+		var attachment = EffectRenderer.GetAttachment( "muzzle" );
 		var startPos = Scene.Camera.Transform.Position;
 		var direction = Scene.Camera.Transform.Rotation.Forward;
 		direction += Vector3.Random * Spread;
@@ -160,14 +164,16 @@ public abstract class WeaponComponent : Component
 			}
 		}
 		
-		if ( ModelRenderer.IsValid() )
-		{
-			ModelRenderer.Enabled = true;
-		}
+		ModelRenderer.Enabled = !HasViewModel;
 		
 		if ( DeploySound is not null )
 		{
 			Sound.Play( DeploySound, Transform.Position );
+		}
+
+		if ( !IsProxy )
+		{
+			CreateViewModel();
 		}
 		
 		NextAttackTime = DeployTime;
@@ -175,10 +181,8 @@ public abstract class WeaponComponent : Component
 
 	protected virtual void OnHolstered()
 	{
-		if ( ModelRenderer.IsValid() )
-		{
-			ModelRenderer.Enabled = false;
-		}
+		ModelRenderer.Enabled = false;
+		DestroyViewModel();
 
 		ReloadSound?.Stop();
 	}
@@ -210,6 +214,29 @@ public abstract class WeaponComponent : Component
 		}
 		
 		base.OnDestroy();
+	}
+	
+	private void DestroyViewModel()
+	{
+		ViewModel?.GameObject.Destroy();
+		ViewModel = null;
+	}
+
+	private void CreateViewModel()
+	{
+		if ( !ViewModelPrefab.IsValid() )
+			return;
+		
+		var player = Components.GetInAncestors<PlayerController>();
+
+		var viewModelGameObject = ViewModelPrefab.Clone();
+		viewModelGameObject.SetParent( player.ViewModelRoot, false );
+		
+		ViewModel = viewModelGameObject.Components.Get<ViewModel>();
+		ViewModel.SetWeaponComponent( this );
+		ViewModel.SetCamera( player.ViewModelCamera );
+		
+		ModelRenderer.Enabled = false;
 	}
 
 	[Broadcast]
@@ -255,7 +282,7 @@ public abstract class WeaponComponent : Component
 
 		if ( MuzzleFlash is not null )
 		{
-			var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
+			var transform = EffectRenderer.SceneModel.GetAttachment( "muzzle" );
 
 			if ( transform.HasValue )
 			{
@@ -267,7 +294,7 @@ public abstract class WeaponComponent : Component
 		
 		if ( MuzzleSmoke is not null )
 		{
-			var transform = ModelRenderer.SceneModel.GetAttachment( "muzzle" );
+			var transform = EffectRenderer.SceneModel.GetAttachment( "muzzle" );
 
 			if ( transform.HasValue )
 			{

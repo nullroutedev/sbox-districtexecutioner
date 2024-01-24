@@ -5,9 +5,7 @@
     "Enabled": true,
     "Components": [
       {
-        "__version": 0,
         "__type": "SMG",
-        "__enabled": true,
         "AmmoType": "SMG",
         "ClipSize": 24,
         "Damage": 10,
@@ -27,7 +25,9 @@
         "Recoil": "-40,5,0",
         "ReloadSoundSequence": "sounds/guns/mp5/reload/mp5.reload.sndseq",
         "ReloadTime": 2,
-        "Spread": 0.01
+        "Spread": 0.01,
+        "ViewModel": null,
+        "ViewModelPrefab": "prefabs/vm_mp5.prefab"
       }
     ],
     "Children": [
@@ -39,9 +39,7 @@
         "Enabled": true,
         "Components": [
           {
-            "__version": 0,
             "__type": "SkinnedModelRenderer",
-            "__enabled": true,
             "BodyGroups": 3,
             "BoneMergeTarget": null,
             "CreateBoneObjects": false,

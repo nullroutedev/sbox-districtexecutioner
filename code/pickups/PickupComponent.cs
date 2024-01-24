@@ -3,7 +3,7 @@ using Sandbox;
 
 namespace Facepunch.Arena;
 
-[HideInEditor]
+[Hide]
 public abstract class PickupComponent : Component
 {
 	[Property] public Collider Collider { get; set; }

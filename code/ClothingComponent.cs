@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Facepunch.Arena;
 
-[HideInEditor]
+[Hide]
 public sealed class ClothingComponent : Component
 {
 	[Property] public Clothing.ClothingCategory Category { get; set; }

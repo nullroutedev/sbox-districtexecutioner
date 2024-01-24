@@ -21,6 +21,8 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	
 	[Property] private CitizenAnimationHelper ShadowAnimator { get; set; }
 	[Property] public WeaponContainer Weapons { get; set; }
+	[Property] public CameraComponent ViewModelCamera { get; set; }
+	[Property] public GameObject ViewModelRoot { get; set; }
 	[Property] public AmmoContainer Ammo { get; set; }
 	[Property] public GameObject Head { get; set; }
 	[Property] public GameObject Eye { get; set; }
@@ -31,11 +33,13 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	[Property] public float StandHeight { get; set; } = 64f;
 	[Property] public float DuckHeight { get; set; } = 28f;
 	[Property] public float HealthRegenPerSecond { get; set; } = 10f;
-
+	[Property] public Action OnJump { get; set; }
+	
 	[Sync, Property] public float MaxHealth { get; private set; } = 100f;
 	[Sync] public LifeState LifeState { get; private set; } = LifeState.Alive;
 	[Sync] public float Health { get; private set; } = 100f;
 	[Sync] public Angles EyeAngles { get; set; }
+	[Sync] public bool IsAiming { get; set; }
 	[Sync] public bool IsRunning { get; set; }
 	[Sync] public bool IsCrouching { get; set; }
 	[Sync] public int Deaths { get; private set; }
@@ -103,7 +107,6 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 
 			if ( HurtSound is not null )
 			{
-				Log.Info( "PLaying: " + HurtSound );
 				Sound.Play( HurtSound, Transform.Position );
 			}
 		}
@@ -126,9 +129,8 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 	{
 		if ( !IsCrouching ) return true;
 		if ( LastUngroundedTime < 0.2f ) return false;
-
-		var cc = GameObject.Components.Get<CharacterController>();
-		var tr = cc.TraceDirection( Vector3.Up * DuckHeight );
+		
+		var tr = CharacterController.TraceDirection( Vector3.Up * DuckHeight );
 		return !tr.Hit;
 	}
 
@@ -195,43 +197,68 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		base.OnStart();
 	}
 
+	private void UpdateModelVisibility()
+	{
+		if ( !ModelRenderer.IsValid() )
+			return;
+		
+		var deployedWeapon = Weapons.Deployed;
+		var shadowRenderer = ShadowAnimator.Components.Get<SkinnedModelRenderer>( true );
+		var hasViewModel = deployedWeapon.IsValid() && deployedWeapon.HasViewModel;
+		var clothing = ModelRenderer.Components.GetAll<ClothingComponent>( FindMode.EverythingInSelfAndDescendants );
+		
+		if ( hasViewModel )
+		{
+			shadowRenderer.Enabled = false;
+			
+			ModelRenderer.Enabled = Ragdoll.IsRagdolled;
+			ModelRenderer.RenderType = Sandbox.ModelRenderer.ShadowRenderType.On;
+			
+			foreach ( var c in clothing )
+			{
+				c.ModelRenderer.Enabled = Ragdoll.IsRagdolled;
+				c.ModelRenderer.RenderType = Sandbox.ModelRenderer.ShadowRenderType.On;
+			}
+
+			return;
+		}
+			
+		ModelRenderer.SetBodyGroup( "head", IsProxy ? 0 : 1 );
+		ModelRenderer.Enabled = true;
+
+		if ( Ragdoll.IsRagdolled )
+		{
+			ModelRenderer.RenderType = Sandbox.ModelRenderer.ShadowRenderType.On;
+			shadowRenderer.Enabled = false;
+		}
+		else
+		{
+			ModelRenderer.RenderType = IsProxy
+				? Sandbox.ModelRenderer.ShadowRenderType.On
+				: Sandbox.ModelRenderer.ShadowRenderType.Off;
+
+			shadowRenderer.Enabled = true;
+		}
+
+		foreach ( var c in clothing )
+		{
+			c.ModelRenderer.Enabled = true;
+
+			if ( c.Category is Clothing.ClothingCategory.Hair or Clothing.ClothingCategory.Facial or Clothing.ClothingCategory.Hat )
+			{
+				c.ModelRenderer.RenderType = IsProxy ? Sandbox.ModelRenderer.ShadowRenderType.On : Sandbox.ModelRenderer.ShadowRenderType.ShadowsOnly;
+			}
+		}
+	}
+
 	protected override void OnPreRender()
 	{
 		base.OnPreRender();
 
 		if ( !Scene.IsValid() || !Scene.Camera.IsValid() )
 			return;
-		
-		if ( ModelRenderer.IsValid() )
-		{
-			ModelRenderer.SetBodyGroup( "head", IsProxy ? 0 : 1 );
 
-			var shadowRenderer = ShadowAnimator.Components.Get<SkinnedModelRenderer>( true );
-
-			if ( Ragdoll.IsRagdolled )
-			{
-				ModelRenderer.RenderType = Sandbox.ModelRenderer.ShadowRenderType.On;
-				shadowRenderer.Enabled = false;
-			}
-			else
-			{
-				ModelRenderer.RenderType = IsProxy
-					? Sandbox.ModelRenderer.ShadowRenderType.On
-					: Sandbox.ModelRenderer.ShadowRenderType.Off;
-
-				shadowRenderer.Enabled = true;
-			}
-
-			var clothing = ModelRenderer.Components.GetAll<ClothingComponent>()
-				.Where( c => c.Category is Clothing.ClothingCategory.Hair
-					or Clothing.ClothingCategory.Facial
-					or Clothing.ClothingCategory.Hat );
-
-			foreach ( var c in clothing )
-			{
-				c.ModelRenderer.RenderType = IsProxy ? Sandbox.ModelRenderer.ShadowRenderType.On : Sandbox.ModelRenderer.ShadowRenderType.ShadowsOnly;
-			}
-		}
+		UpdateModelVisibility();
 		
 		if ( IsProxy )
 			return;
@@ -262,8 +289,14 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 			.WithAnyTags( "solid" )
 			.Radius( 2f )
 			.Run();
-	
-		Scene.Camera.Transform.Position = trace.Hit ? trace.EndPosition : idealEyePos;
+
+		var deployedWeapon = Weapons.Deployed;
+		var hasViewModel = deployedWeapon.IsValid() && deployedWeapon.HasViewModel;
+
+		if ( hasViewModel )
+			Scene.Camera.Transform.Position = Head.Transform.Position;
+		else
+			Scene.Camera.Transform.Position = trace.Hit ? trace.EndPosition : idealEyePos;
 		
 		if ( SicknessMode )
 			Scene.Camera.Transform.Rotation = Rotation.LookAt( Eye.Transform.Rotation.Left ) * Rotation.FromPitch( -10f );
@@ -486,5 +519,7 @@ public class PlayerController : Component, Component.ITriggerListener, IHealthCo
 		{
 			animator.TriggerJump();
 		}
+
+		OnJump?.Invoke();
 	}
 }
