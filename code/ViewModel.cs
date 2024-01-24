@@ -29,12 +29,20 @@ public sealed class ViewModel : Component
 	protected override void OnStart()
 	{
 		ModelRenderer.Set( "b_deploy", true );
-		PlayerController.OnJump += OnPlayerJumped;
+		
+		if ( PlayerController.IsValid() )
+		{
+			PlayerController.OnJump += OnPlayerJumped;
+		}
 	}
 
 	protected override void OnDestroy()
 	{
-		PlayerController.OnJump -= OnPlayerJumped;
+		if ( PlayerController.IsValid() )
+		{
+			PlayerController.OnJump -= OnPlayerJumped;
+		}
+		
 		base.OnDestroy();
 	}
 
