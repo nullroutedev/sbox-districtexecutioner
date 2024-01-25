@@ -54,11 +54,13 @@ public sealed class ViewModel : Component
 		ApplyVelocity();
 		ApplyStates();
 		ApplyAnimationParameters();
-		ApplyAnimationTransform();
 
 		LerpedLocalRotation = Rotation.Lerp( LerpedLocalRotation, LocalRotation, Time.Delta * 10f );
 		LerpedLocalPosition = LerpedLocalPosition.LerpTo( LocalPosition, Time.Delta * 10f );
 
+		Camera.Transform.Position = Scene.Camera.Transform.Position;
+		Camera.Transform.Rotation = Scene.Camera.Transform.Rotation;
+		
 		Transform.LocalRotation = LerpedLocalRotation;
 		Transform.LocalPosition = LerpedLocalPosition;
 	}
@@ -66,13 +68,6 @@ public sealed class ViewModel : Component
 	private void OnPlayerJumped()
 	{
 		ModelRenderer.Set( "b_jump", true );
-	}
-
-	private void ApplyAnimationTransform()
-	{
-		var bone = ModelRenderer.SceneModel.GetBoneLocalTransform( "camera" );
-		Camera.Transform.LocalPosition += bone.Position;
-		Camera.Transform.LocalRotation *= bone.Rotation;
 	}
 
 	private Vector3 LerpedWishLook { get; set; }
