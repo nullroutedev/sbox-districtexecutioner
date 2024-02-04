@@ -1,8 +1,8 @@
 {
-  "Title": "Arena",
+  "Title": "District Executioner",
   "Type": "game",
-  "Org": "facepunch",
-  "Ident": "arena",
+  "Org": "local",
+  "Ident": "de",
   "Tags": null,
   "Schema": 1,
   "HasAssets": true,
@@ -70,6 +70,7 @@
           "r": "Ignore"
         }
       ]
-    }
+    },
+    "ParentPackage": "facepunch.arena"
   }
 }
